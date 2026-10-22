@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17191C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="DriveGym">
+<title>Seasons</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=18">
+<script>
+function capText() {
+  var root = document.documentElement;
+  var px = parseFloat(getComputedStyle(root).fontSize);
+  if (px > 24) root.style.fontSize = "24px";
+}
+capText();
+function zoneLabel(zone) {
+  if (!zone || zone === "Africa/Johannesburg") return "South Africa";
+  if (zone === "Europe/Madrid") return "Spain";
+  var parts = zone.split("/");
+  var city = parts[parts.length - 1].replace(/_/g, " ");
+  return city || "South Africa";
+}
+function applyLocalTimes() {
+  var zone = "";
+  try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { zone = ""; }
+  var line = document.getElementById("zoneline");
+  if (line) line.textContent = "Start time zone: " + zoneLabel(zone);
+  if (!zone) return;
+  document.querySelectorAll("[data-start]").forEach(function (el) {
+    var when = new Date(el.getAttribute("data-start"));
+    var clock = new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit", minute: "2-digit", hour12: false, timeZone: zone
+    }).format(when);
+    var evening = el.getAttribute("data-evening") || "";
+    el.textContent = evening ? clock + " · " + evening : clock;
+  });
+}
+function fitTitles() {
+  document.querySelectorAll(".titleline").forEach(function (line) {
+    var heading = line.querySelector("h1");
+    var year = line.querySelector(".year");
+    if (!heading || heading.clientWidth < 1) return;
+    heading.style.fontSize = "";
+    if (year) year.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(heading).fontSize);
+    while (size > 16 && (heading.scrollWidth > heading.clientWidth || line.scrollWidth > line.clientWidth)) {
+      size = Math.max(16, size - 0.5);
+      heading.style.fontSize = size + "px";
+      if (year) year.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+function fitLines() {
+  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver").forEach(function (el) {
+    if (el.clientWidth < 1) return;
+    el.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    while (size > 16 && el.scrollWidth > el.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      el.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+function fitFilters() {
+  document.querySelectorAll(".filters button").forEach(function (el) {
+    el.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    while (size > 16 && el.scrollWidth > el.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      el.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+document.addEventListener("DOMContentLoaded", function () {
+  applyLocalTimes();
+  fitTitles();
+  fitFilters();
+  fitLines();
+});
+window.addEventListener("pageshow", function () {
+  capText();
+  fitTitles();
+  fitFilters();
+  fitLines();
+});
+window.addEventListener("resize", function () {
+  fitTitles();
+  fitFilters();
+  fitLines();
+});
+</script>
+</head>
+<body data-page="seasons">
+<div class="page">
+<section class="head"><div class="titleline"><img src="icon.png" alt=""><h1>Seasons</h1></div><span class="caption">Choose a season</span></section><section class="list"><div class="season-row soon"><span class="yr">2027</span><span class="stack"><span class="who">Coming soon</span><span class="detail">Calendar not out yet</span></span></div><a class="season-row" data-year="2026" href="2026/standings.html"><span class="yr">2026</span><span class="stack"><span class="who">Current season</span><span class="detail">31 of 37 races · Len leads</span></span><span class="chev" aria-hidden="true">›</span></a></section>
+<script>
+var from = "standings";
+try {
+  var asked = new URLSearchParams(location.search).get("from");
+  if (asked === "race" || asked === "calendar" || asked === "standings") from = asked;
+} catch (err) {}
+document.querySelectorAll("nav.tabs a").forEach(function (link) {
+  link.classList.toggle("on", link.getAttribute("data-tab") === from);
+});
+var page = from === "race" ? "index.html" : from === "calendar" ? "calendar.html" : "standings.html";
+document.querySelectorAll("[data-year]").forEach(function (link) {
+  link.setAttribute("href", link.getAttribute("data-year") + "/" + page);
+});
+</script>
+
+<nav class="tabs"><a class="" data-tab="race" href="index.html">Results</a><a class="" data-tab="standings" href="standings.html">Standings</a><a class="" data-tab="calendar" href="calendar.html">Calendar</a></nav>
+</div>
+
+</body>
+</html>

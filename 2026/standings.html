@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17191C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="DriveGym">
+<title>2026 standings</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="icon" href="../icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=18">
+<script>
+function capText() {
+  var root = document.documentElement;
+  var px = parseFloat(getComputedStyle(root).fontSize);
+  if (px > 24) root.style.fontSize = "24px";
+}
+capText();
+function zoneLabel(zone) {
+  if (!zone || zone === "Africa/Johannesburg") return "South Africa";
+  if (zone === "Europe/Madrid") return "Spain";
+  var parts = zone.split("/");
+  var city = parts[parts.length - 1].replace(/_/g, " ");
+  return city || "South Africa";
+}
+function applyLocalTimes() {
+  var zone = "";
+  try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { zone = ""; }
+  var line = document.getElementById("zoneline");
+  if (line) line.textContent = "Start time zone: " + zoneLabel(zone);
+  if (!zone) return;
+  document.querySelectorAll("[data-start]").forEach(function (el) {
+    var when = new Date(el.getAttribute("data-start"));
+    var clock = new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit", minute: "2-digit", hour12: false, timeZone: zone
+    }).format(when);
+    var evening = el.getAttribute("data-evening") || "";
+    el.textContent = evening ? clock + " · " + evening : clock;
+  });
+}
+function fitTitles() {
+  document.querySelectorAll(".titleline").forEach(function (line) {
+    var heading = line.querySelector("h1");
+    var year = line.querySelector(".year");
+    if (!heading || heading.clientWidth < 1) return;
+    heading.style.fontSize = "";
+    if (year) year.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(heading).fontSize);
+    while (size > 16 && (heading.scrollWidth > heading.clientWidth || line.scrollWidth > line.clientWidth)) {
+      size = Math.max(16, size - 0.5);
+      heading.style.fontSize = size + "px";
+      if (year) year.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+function fitLines() {
+  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver").forEach(function (el) {
+    if (el.clientWidth < 1) return;
+    el.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    while (size > 16 && el.scrollWidth > el.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      el.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+function fitFilters() {
+  document.querySelectorAll(".filters button").forEach(function (el) {
+    el.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    while (size > 16 && el.scrollWidth > el.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      el.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+document.addEventListener("DOMContentLoaded", function () {
+  applyLocalTimes();
+  fitTitles();
+  fitFilters();
+  fitLines();
+});
+window.addEventListener("pageshow", function () {
+  capText();
+  fitTitles();
+  fitFilters();
+  fitLines();
+});
+window.addEventListener("resize", function () {
+  fitTitles();
+  fitFilters();
+  fitLines();
+});
+</script>
+</head>
+<body data-page="standings">
+<div class="page">
+
+<section class="stand-head"><div class="titleline"><img src="../icon.png" alt=""><h1>Standings</h1><a class="year" href="../seasons.html?from=standings">’26 ›</a></div><span class="caption" id="page-caption">After 19 Oct · best 31 of 37 count</span></section>
+
+<section class="filters">
+<button type="button" class="on" data-filter="master">Master Driver</button>
+<button type="button" data-filter="series">Series</button>
+<button type="button" data-filter="best">Best Drive</button>
+</section>
+<section id="master"><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Len</span><div class="track"><div class="fill lead" style="width:100%"></div></div></div><span class="pts">702</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Johan</span><div class="track"><div class="fill" style="width:80%"></div></div></div><span class="pts">563</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Adriaan</span><div class="track"><div class="fill" style="width:54%"></div></div></div><span class="pts">380</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Jaco</span><div class="track"><div class="fill" style="width:50%"></div></div></div><span class="pts">354</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Jeremy</span><div class="track"><div class="fill" style="width:39%"></div></div></div><span class="pts">275</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Louis</span><div class="track"><div class="fill" style="width:31%"></div></div></div><span class="pts">218</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Willie</span><div class="track"><div class="fill" style="width:30%"></div></div></div><span class="pts">214</span></div><div class="row"><span class="pos">8</span><div class="stack"><span class="who">Robbie</span><div class="track"><div class="fill" style="width:22%"></div></div></div><span class="pts">151</span></div><div class="row"><span class="pos">9</span><div class="stack"><span class="who">Christo</span><div class="track"><div class="fill" style="width:20%"></div></div></div><span class="pts">141</span></div><div class="row"><span class="pos">10</span><div class="stack"><span class="who">Ramon</span><div class="track"><div class="fill" style="width:14%"></div></div></div><span class="pts">96</span></div><div class="row"><span class="pos">11</span><div class="stack"><span class="who">Wayde</span><div class="track"><div class="fill" style="width:5%"></div></div></div><span class="pts">38</span></div><div class="row"><span class="pos">12</span><div class="stack"><span class="who">Mike</span><div class="track"><div class="fill" style="width:2%"></div></div></div><span class="pts">16</span></div><div class="row"><span class="pos">13</span><div class="stack"><span class="who">Phil</span><div class="track"><div class="fill" style="width:1%"></div></div></div><span class="pts">7</span></div></section></section>
+<section id="series-list" class="hidden">
+<p class="leadin">Choose a series</p>
+<section class="list flush"><button type="button" class="series-row" data-cup="Porsche 911 GT3 Cup 4.0"><span class="name">Porsche Cup</span><span class="chev" aria-hidden="true">›</span><span class="meta">4 of 4 races · Len won</span></button><button type="button" class="series-row" data-cup="GT3 Gen2"><span class="name">GT3</span><span class="chev" aria-hidden="true">›</span><span class="meta">8 of 8 races · Len won</span></button><button type="button" class="series-row" data-cup="Masters Historic F1"><span class="name">Historic F1</span><span class="chev" aria-hidden="true">›</span><span class="meta">4 of 6 races · Len leads</span></button><button type="button" class="series-row" data-cup="GT4"><span class="name">GT4</span><span class="chev" aria-hidden="true">›</span><span class="meta">2 of 4 races · Len leads</span></button><button type="button" class="series-row" data-cup="Stockcar 2024"><span class="name">Stock Car</span><span class="chev" aria-hidden="true">›</span><span class="meta">1 of 4 races · Len leads</span></button><button type="button" class="series-row" data-cup="SprintRace"><span class="name">Sprint Race</span><span class="chev" aria-hidden="true">›</span><span class="meta">3 of 3 races · Len won</span></button><button type="button" class="series-row" data-cup="Stock USA Gen3"><span class="name">Stock USA</span><span class="chev" aria-hidden="true">›</span><span class="meta">2 of 3 races · Len leads</span></button><button type="button" class="series-row" data-cup="German Touring"><span class="name">Group A</span><span class="chev" aria-hidden="true">›</span><span class="meta">2 of 2 races · Len won</span></button></section>
+</section>
+<section id="series-one" class="hidden">
+<button type="button" class="back" id="all-series">‹ All series</button>
+<section class="series-panel hidden" data-series="Porsche 911 GT3 Cup 4.0" data-caption="Final · 4 of 4 races"><h2 class="series-name">Porsche Cup</h2><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Len</span><div class="track"><div class="fill lead" style="width:100%"></div></div></div><span class="pts">70</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Johan</span><div class="track"><div class="fill" style="width:77%"></div></div></div><span class="pts">54</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Adriaan</span><div class="track"><div class="fill" style="width:76%"></div></div></div><span class="pts">53</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Willie</span><div class="track"><div class="fill" style="width:64%"></div></div></div><span class="pts">45</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Jeremy</span><div class="track"><div class="fill" style="width:61%"></div></div></div><span class="pts">43</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Jaco</span><div class="track"><div class="fill" style="width:60%"></div></div></div><span class="pts">42</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Louis</span><div class="track"><div class="fill" style="width:37%"></div></div></div><span class="pts">26</span></div><div class="row"><span class="pos">8</span><div class="stack"><span class="who">Robbie</span><div class="track"><div class="fill" style="width:27%"></div></div></div><span class="pts">19</span></div><div class="row"><span class="pos">9</span><div class="stack"><span class="who">Christo</span><div class="track"><div class="fill" style="width:26%"></div></div></div><span class="pts">18</span></div><div class="row"><span class="pos">10</span><div class="stack"><span class="who">Ramon</span><div class="track"><div class="fill" style="width:16%"></div></div></div><span class="pts">11</span></div><div class="row"><span class="pos">11</span><div class="stack"><span class="who">Wayde</span><div class="track"><div class="fill" style="width:10%"></div></div></div><span class="pts">7</span></div></section></section><section class="series-panel hidden" data-series="GT3 Gen2" data-caption="Final · 8 of 8 races"><h2 class="series-name">GT3</h2><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Len</span><div class="track"><div class="fill lead" style="width:100%"></div></div></div><span class="pts">198</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Johan</span><div class="track"><div class="fill" style="width:96%"></div></div></div><span class="pts">190</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Adriaan</span><div class="track"><div class="fill" style="width:79%"></div></div></div><span class="pts">157</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Jaco</span><div class="track"><div class="fill" style="width:45%"></div></div></div><span class="pts">90</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Robbie</span><div class="track"><div class="fill" style="width:36%"></div></div></div><span class="pts">71</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Christo</span><div class="track"><div class="fill" style="width:34%"></div></div></div><span class="pts">68</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Jeremy</span><div class="track"><div class="fill" style="width:25%"></div></div></div><span class="pts">50</span></div><div class="row"><span class="pos">8</span><div class="stack"><span class="who">Willie</span><div class="track"><div class="fill" style="width:20%"></div></div></div><span class="pts">39</span></div><div class="row"><span class="pos">9</span><div class="stack"><span class="who">Louis</span><div class="track"><div class="fill" style="width:16%"></div></div></div><span class="pts">32</span></div><div class="row"><span class="pos">10</span><div class="stack"><span class="who">Ramon</span><div class="track"><div class="fill" style="width:9%"></div></div></div><span class="pts">17</span></div><div class="row"><span class="pos">11</span><div class="stack"><span class="who">Phil</span><div class="track"><div class="fill" style="width:0%"></div></div></div><span class="pts">0</span></div></section></section><section class="series-panel hidden" data-series="Masters Historic F1" data-caption="After 20 Jul · 4 of 6 races"><h2 class="series-name">Historic F1</h2><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Len</span><div class="track"><div class="fill lead" style="width:100%"></div></div></div><span class="pts">80</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Jaco</span><div class="track"><div class="fill" style="width:69%"></div></div></div><span class="pts">55</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Johan</span><div class="track"><div class="fill" style="width:59%"></div></div></div><span class="pts">47</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Adriaan</span><div class="track"><div class="fill" style="width:30%"></div></div></div><span class="pts">24</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Louis</span><div class="track"><div class="fill" style="width:24%"></div></div></div><span class="pts">19</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Ramon</span><div class="track"><div class="fill" style="width:19%"></div></div></div><span class="pts">15</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Willie</span><div class="track"><div class="fill" style="width:16%"></div></div></div><span class="pts">13</span></div><div class="row"><span class="pos">8</span><div class="stack"><span class="who">Jeremy</span><div class="track"><div class="fill" style="width:6%"></div></div></div><span class="pts">5</span></div><div class="row"><span class="pos">9</span><div class="stack"><span class="who">Wayde</span><div class="track"><div class="fill" style="width:0%"></div></div></div><span class="pts">0</span></div></section></section><section class="series-panel hidden" data-series="GT4" data-caption="After 24 Aug · 2 of 4 races"><h2 class="series-name">GT4</h2><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Len</span><div class="track"><div class="fill lead" style="width:100%"></div></div></div><span class="pts">41</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Johan</span><div class="track"><div class="fill" style="width:85%"></div></div></div><span class="pts">35</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Jaco</span><div class="track"><div class="fill" style="width:73%"></div></div></div><span class="pts">30</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Louis</span><div class="track"><div class="fill" style="width:56%"></div></div></div><span class="pts">23</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Jeremy</span><div class="track"><div class="fill" style="width:51%"></div></div></div><span class="pts">21</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Willie</span><div class="track"><div class="fill" style="width:49%"></div></div></div><span class="pts">20</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Adriaan</span><div class="track"><div class="fill" style="width:32%"></div></div></div><span class="pts">13</span></div><div class="row"><span class="pos">8</span><div class="stack"><span class="who">Ramon</span><div class="track"><div class="fill" style="width:22%"></div></div></div><span class="pts">9</span></div><div class="row"><span class="pos">9</span><div class="stack"><span class="who">Robbie</span><div class="track"><div class="fill" style="width:20%"></div></div></div><span class="pts">8</span></div></section></section><section class="series-panel hidden" data-series="Stockcar 2024" data-caption="After 27 Apr · 1 of 4 races"><h2 class="series-name">Stock Car</h2><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Len</span><div class="track"><div class="fill lead" style="width:100%"></div></div></div><span class="pts">21</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Christo</span><div class="track"><div class="fill" style="width:81%"></div></div></div><span class="pts">17</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Jaco</span><div class="track"><div class="fill" style="width:71%"></div></div></div><span class="pts">15</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Johan</span><div class="track"><div class="fill" style="width:62%"></div></div></div><span class="pts">13</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Adriaan</span><div class="track"><div class="fill" style="width:57%"></div></div></div><span class="pts">12</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Jeremy</span><div class="track"><div class="fill" style="width:52%"></div></div></div><span class="pts">11</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Louis</span><div class="track"><div class="fill" style="width:48%"></div></div></div><span class="pts">10</span></div><div class="row"><span class="pos">8</span><div class="stack"><span class="who">Ramon</span><div class="track"><div class="fill" style="width:0%"></div></div></div><span class="pts">0</span></div></section></section><section class="series-panel hidden" data-series="SprintRace" data-caption="Final · 3 of 3 races"><h2 class="series-name">Sprint Race</h2><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Len</span><div class="track"><div class="fill lead" style="width:100%"></div></div></div><span class="pts">55</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Adriaan</span><div class="track"><div class="fill" style="width:80%"></div></div></div><span class="pts">44</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Christo</span><div class="track"><div class="fill" style="width:69%"></div></div></div><span class="pts">38</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Robbie</span><div class="track"><div class="fill" style="width:69%"></div></div></div><span class="pts">38</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Jaco</span><div class="track"><div class="fill" style="width:56%"></div></div></div><span class="pts">31</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Johan</span><div class="track"><div class="fill" style="width:51%"></div></div></div><span class="pts">28</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Ramon</span><div class="track"><div class="fill" style="width:44%"></div></div></div><span class="pts">24</span></div><div class="row"><span class="pos">8</span><div class="stack"><span class="who">Jeremy</span><div class="track"><div class="fill" style="width:40%"></div></div></div><span class="pts">22</span></div><div class="row"><span class="pos">9</span><div class="stack"><span class="who">Wayde</span><div class="track"><div class="fill" style="width:40%"></div></div></div><span class="pts">22</span></div><div class="row"><span class="pos">10</span><div class="stack"><span class="who">Mike</span><div class="track"><div class="fill" style="width:29%"></div></div></div><span class="pts">16</span></div><div class="row"><span class="pos">11</span><div class="stack"><span class="who">Willie</span><div class="track"><div class="fill" style="width:27%"></div></div></div><span class="pts">15</span></div><div class="row"><span class="pos">12</span><div class="stack"><span class="who">Louis</span><div class="track"><div class="fill" style="width:20%"></div></div></div><span class="pts">11</span></div><div class="row"><span class="pos">13</span><div class="stack"><span class="who">Phil</span><div class="track"><div class="fill" style="width:13%"></div></div></div><span class="pts">7</span></div></section></section><section class="series-panel hidden" data-series="Stock USA Gen3" data-caption="After 3 Aug · 2 of 3 races"><h2 class="series-name">Stock USA</h2><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Len</span><div class="track"><div class="fill lead" style="width:100%"></div></div></div><span class="pts">39</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Johan</span><div class="track"><div class="fill" style="width:95%"></div></div></div><span class="pts">37</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Jaco</span><div class="track"><div class="fill" style="width:72%"></div></div></div><span class="pts">28</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Willie</span><div class="track"><div class="fill" style="width:72%"></div></div></div><span class="pts">28</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Jeremy</span><div class="track"><div class="fill" style="width:28%"></div></div></div><span class="pts">11</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Louis</span><div class="track"><div class="fill" style="width:26%"></div></div></div><span class="pts">10</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Ramon</span><div class="track"><div class="fill" style="width:0%"></div></div></div><span class="pts">0</span></div></section></section><section class="series-panel hidden" data-series="German Touring" data-caption="Final · 2 of 2 races"><h2 class="series-name">Group A</h2><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Len</span><div class="track"><div class="fill lead" style="width:100%"></div></div></div><span class="pts">42</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Adriaan</span><div class="track"><div class="fill" style="width:76%"></div></div></div><span class="pts">32</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Louis</span><div class="track"><div class="fill" style="width:64%"></div></div></div><span class="pts">27</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Jaco</span><div class="track"><div class="fill" style="width:57%"></div></div></div><span class="pts">24</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Jeremy</span><div class="track"><div class="fill" style="width:55%"></div></div></div><span class="pts">23</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Willie</span><div class="track"><div class="fill" style="width:40%"></div></div></div><span class="pts">17</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Robbie</span><div class="track"><div class="fill" style="width:36%"></div></div></div><span class="pts">15</span></div><div class="row"><span class="pos">8</span><div class="stack"><span class="who">Johan</span><div class="track"><div class="fill" style="width:26%"></div></div></div><span class="pts">11</span></div><div class="row"><span class="pos">9</span><div class="stack"><span class="who">Wayde</span><div class="track"><div class="fill" style="width:21%"></div></div></div><span class="pts">9</span></div></section></section>
+</section>
+<section id="best" class="hidden">
+<p class="leadin">Total Best Drive awards</p><section class="list"><div class="row"><span class="pos lead">1</span><div class="stack"><span class="who">Louis</span><div class="dots"><span class="dot lead"></span><span class="dot lead"></span></div></div><span class="pts">2</span></div></section>
+</section>
+<script>
+var masterCaption = "After 19 Oct \u00b7 best 31 of 37 count";
+var seriesCaption = "8 series in 2026";
+var bestCaption = "2026 trial \u00b7 from 12 Oct";
+function setCaption(text) {
+  document.getElementById("page-caption").textContent = text;
+}
+function show(which) {
+  document.querySelectorAll(".filters button").forEach(function (button) {
+    var filter = button.getAttribute("data-filter");
+    var on = filter === which || (which === "one" && filter === "series");
+    button.classList.toggle("on", on);
+  });
+  document.getElementById("master").classList.toggle("hidden", which !== "master");
+  document.getElementById("series-list").classList.toggle("hidden", which !== "series");
+  document.getElementById("series-one").classList.toggle("hidden", which !== "one");
+  document.getElementById("best").classList.toggle("hidden", which !== "best");
+  if (which === "master") setCaption(masterCaption);
+  if (which === "series") setCaption(seriesCaption);
+  if (which === "best") setCaption(bestCaption);
+  window.scrollTo(0, 0);
+}
+function openSeries(cup) {
+  var match = null;
+  document.querySelectorAll("[data-series]").forEach(function (panel) {
+    var on = panel.getAttribute("data-series") === cup;
+    panel.classList.toggle("hidden", !on);
+    if (on) match = panel;
+  });
+  if (!match) {
+    show("series");
+    return;
+  }
+  show("one");
+  setCaption(match.getAttribute("data-caption"));
+}
+document.querySelectorAll(".filters button").forEach(function (button) {
+  button.addEventListener("click", function () {
+    var filter = button.getAttribute("data-filter");
+    show(filter);
+    var hash = filter === "series" ? "#series" : filter === "best" ? "#best" : "#master";
+    history.replaceState(null, "", hash);
+  });
+});
+document.querySelectorAll(".series-row").forEach(function (button) {
+  button.addEventListener("click", function () {
+    var cup = button.getAttribute("data-cup");
+    openSeries(cup);
+    history.replaceState(null, "", "#series-" + encodeURIComponent(cup));
+  });
+});
+var allSeries = document.getElementById("all-series");
+if (allSeries) {
+  allSeries.addEventListener("click", function () {
+    show("series");
+    history.replaceState(null, "", "#series");
+  });
+}
+function openFromHash() {
+  var hash = location.hash || "";
+  if (hash === "#series") show("series");
+  else if (hash === "#best") show("best");
+  else if (hash.indexOf("#series-") === 0) openSeries(decodeURIComponent(hash.slice(8)));
+  else show("master");
+}
+openFromHash();
+window.addEventListener("hashchange", openFromHash);
+</script>
+
+<nav class="tabs"><a class="" data-tab="race" href="index.html">Results</a><a class="on" data-tab="standings" href="standings.html">Standings</a><a class="" data-tab="calendar" href="calendar.html">Calendar</a></nav>
+</div>
+
+<script>
+var current = document.querySelector("nav.tabs a.on");
+if (current) {
+  current.addEventListener("click", function (event) {
+    event.preventDefault();
+    window.scrollTo(0, 0);
+  });
+}
+</script>
+
+</body>
+</html>

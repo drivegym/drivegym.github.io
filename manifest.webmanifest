@@ -1,0 +1,28 @@
+{
+  "name": "DriveGym",
+  "short_name": "DriveGym",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#17191C",
+  "theme_color": "#17191C",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
