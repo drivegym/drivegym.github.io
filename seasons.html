@@ -14,7 +14,7 @@
 <link rel="icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="style.css?v=26">
 <script>
 function capText() {
   var root = document.documentElement;
@@ -61,7 +61,7 @@ function fitTitles() {
   });
 }
 function fitLines() {
-  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag").forEach(function (el) {
+  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag, .view[data-view=rhythm] .stat .who, .stat .mom").forEach(function (el) {
     if (el.clientWidth < 1) return;
     el.style.fontSize = "";
     var size = parseFloat(getComputedStyle(el).fontSize);
@@ -96,12 +96,30 @@ function fitMetal() {
     }
   });
 }
+function showView(name) {
+  document.querySelectorAll(".viewtabs button").forEach(function (btn) {
+    var on = btn.getAttribute("data-view") === name;
+    btn.classList.toggle("on", on);
+    btn.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  document.querySelectorAll(".view").forEach(function (panel) {
+    panel.classList.toggle("hidden", panel.getAttribute("data-view") !== name);
+  });
+  fitTitles();
+  fitLines();
+  fitMetal();
+}
 document.addEventListener("DOMContentLoaded", function () {
   applyLocalTimes();
   fitTitles();
   fitFilters();
   fitLines();
   fitMetal();
+  document.querySelectorAll(".viewtabs button").forEach(function (btn) {
+    btn.addEventListener("click", function () { showView(btn.getAttribute("data-view")); });
+  });
+  var asked = location.hash.replace("#", "");
+  if (asked === "pace" || asked === "rhythm") showView(asked);
 });
 window.addEventListener("pageshow", function () {
   capText();
