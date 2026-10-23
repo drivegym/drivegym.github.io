@@ -68,6 +68,9 @@ h2.series-name { margin: 0.125rem 1.125rem 0; font-family: "Barlow Condensed", s
 .dots { display: flex; gap: 6px; align-items: center; min-height: 14px; }
 .dot { width: 14px; height: 14px; border-radius: 7px; background: #8A8F98; flex: none; }
 .dot.lead { background: #F5B400; }
+.stars { display: flex; gap: 4px; align-items: center; min-height: 20px; overflow: hidden; flex-wrap: nowrap; }
+.stars svg { width: 20px; height: 20px; flex: none; }
+.awardnote { margin: 14px 18px 0; font-size: 1.0625rem; color: #B0B3B8; white-space: nowrap; overflow: hidden; }
 .chips { padding: 0.75rem 1.125rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .chips button { padding: 0.5rem 0.875rem; min-height: 2.75rem; border-radius: 1.375rem; border: 1px solid #4A4E56; background: transparent; color: #D8D5CE; }
 .chips button.on { border: none; background: #EDEAE3; color: #17191C; }
@@ -179,6 +182,8 @@ nav.tabs a.on { color: #F5B400; }
 .example .when { font-size: 1rem; color: #B0B3B8; }
 .example p { margin: 6px 0 0; color: #EDEAE3; }
 .explain p.tight { margin-top: 8px; }
+.explain p.trial { margin: 14px 2px 0; font-size: 1rem; color: #B0B3B8; }
+.bestline .chev { font-size: 1.25rem; }
 .explain h2.raise { margin-top: 26px; }
 .step { display: grid; grid-template-columns: 2.125rem minmax(0, 1fr); column-gap: 10px; margin-top: 14px; }
 .step .n { width: 2.125rem; height: 2.125rem; border-radius: 50%; background: #2C3036; color: #F5B400; display: flex; align-items: center; justify-content: center; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 1.25rem; }
