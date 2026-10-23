@@ -14,12 +14,12 @@
 <link rel="icon" href="../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=18">
+<link rel="stylesheet" href="../style.css?v=20">
 <script>
 function capText() {
   var root = document.documentElement;
   var px = parseFloat(getComputedStyle(root).fontSize);
-  if (px > 24) root.style.fontSize = "24px";
+  if (px > 20) root.style.fontSize = "20px";
 }
 capText();
 function zoneLabel(zone) {
@@ -61,7 +61,7 @@ function fitTitles() {
   });
 }
 function fitLines() {
-  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver").forEach(function (el) {
+  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag").forEach(function (el) {
     if (el.clientWidth < 1) return;
     el.style.fontSize = "";
     var size = parseFloat(getComputedStyle(el).fontSize);
@@ -83,22 +83,38 @@ function fitFilters() {
     }
   });
 }
+function fitMetal() {
+  document.querySelectorAll(".metaline").forEach(function (line) {
+    var crown = line.querySelector(".crownline");
+    if (!crown || line.clientWidth < 1) return;
+    crown.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(crown).fontSize);
+    while (size > 16 && line.scrollWidth > line.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      crown.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
 document.addEventListener("DOMContentLoaded", function () {
   applyLocalTimes();
   fitTitles();
   fitFilters();
   fitLines();
+  fitMetal();
 });
 window.addEventListener("pageshow", function () {
   capText();
   fitTitles();
   fitFilters();
   fitLines();
+  fitMetal();
 });
 window.addEventListener("resize", function () {
   fitTitles();
   fitFilters();
   fitLines();
+  fitMetal();
 });
 </script>
 </head>

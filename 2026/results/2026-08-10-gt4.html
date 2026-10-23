@@ -14,12 +14,12 @@
 <link rel="icon" href="../../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../style.css?v=18">
+<link rel="stylesheet" href="../../style.css?v=20">
 <script>
 function capText() {
   var root = document.documentElement;
   var px = parseFloat(getComputedStyle(root).fontSize);
-  if (px > 24) root.style.fontSize = "24px";
+  if (px > 20) root.style.fontSize = "20px";
 }
 capText();
 function zoneLabel(zone) {
@@ -61,7 +61,7 @@ function fitTitles() {
   });
 }
 function fitLines() {
-  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver").forEach(function (el) {
+  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag").forEach(function (el) {
     if (el.clientWidth < 1) return;
     el.style.fontSize = "";
     var size = parseFloat(getComputedStyle(el).fontSize);
@@ -83,28 +83,44 @@ function fitFilters() {
     }
   });
 }
+function fitMetal() {
+  document.querySelectorAll(".metaline").forEach(function (line) {
+    var crown = line.querySelector(".crownline");
+    if (!crown || line.clientWidth < 1) return;
+    crown.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(crown).fontSize);
+    while (size > 16 && line.scrollWidth > line.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      crown.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
 document.addEventListener("DOMContentLoaded", function () {
   applyLocalTimes();
   fitTitles();
   fitFilters();
   fitLines();
+  fitMetal();
 });
 window.addEventListener("pageshow", function () {
   capText();
   fitTitles();
   fitFilters();
   fitLines();
+  fitMetal();
 });
 window.addEventListener("resize", function () {
   fitTitles();
   fitFilters();
   fitLines();
+  fitMetal();
 });
 </script>
 </head>
 <body data-page="race">
 <div class="page">
-<section class="racehead"><div class="titleline"><img src="../../icon.png" alt=""><h1>Brands Hatch · GT4</h1></div><span class="sub">GT4 · 1/4 · 10 Aug 2026</span></section><section class="podium"><div class="podium-row"><div class="place p2"><div class="avatar" aria-hidden="true">J</div><span class="driver">Johan</span><span class="standing">2</span></div><div class="place p1"><div class="avatar" aria-hidden="true">L</div><span class="driver">Len</span><span class="standing">1</span></div><div class="place p3"><div class="avatar" aria-hidden="true">J</div><span class="driver">Jaco</span><span class="standing">3</span></div></div></section><section class="list"><div class="row"><span class="pos">1</span><div class="stack"><span class="who">Len</span></div><span class="pts">21</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Johan</span></div><span class="pts">17</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Jaco</span></div><span class="pts">15</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Louis</span></div><span class="pts">13</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Willie</span></div><span class="pts">11</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Jeremy</span></div><span class="pts">10</span></div><div class="row"><span class="pos">7</span><div class="stack"><span class="who">Ramon</span></div><span class="pts">9</span></div><div class="row"><span class="pos">DNF</span><div class="stack"><span class="who">Adriaan</span></div><span class="pts">0</span></div></section><a class="nextrace" href="../calendar.html"><span class="kickline"><span class="kicker">Next · Mon 26 Oct</span><span class="togo">6 to go</span></span><span class="big">Nordschleife · GT4</span><span class="when" data-start="2026-10-26T18:00:00Z" data-evening="1 h">20:00 South Africa · 19:00 Spain</span></a>
+<section class="racehead"><div class="titleline"><img src="../../icon.png" alt=""><h1>Brands Hatch · GT4</h1></div><span class="sub">GT4 · 1/4 · 10 Aug 2026</span></section><section class="results"><div class="rrows"><div class="rrow pod gold"><span class="rmetal"><span class="rnum">1</span></span><span class="rphoto"><img src="../../photos/len.jpg" alt=""></span><span class="rwho"><span class="rname">Len</span></span><span class="rpts"><span class="rscore">21</span></span></div><div class="rrow pod silver"><span class="rmetal"><span class="rnum">2</span></span><span class="rphoto"><img src="../../photos/johan.jpg" alt=""></span><span class="rwho"><span class="rname">Johan</span></span><span class="rpts"><span class="rscore">17</span></span></div><div class="rrow pod bronze"><span class="rmetal"><span class="rnum">3</span></span><span class="rphoto"><img src="../../photos/jaco.jpg" alt=""></span><span class="rwho"><span class="rname">Jaco</span></span><span class="rpts"><span class="rscore">15</span></span></div><div class="rrow"><span class="rplace">4</span><span class="rphoto"><span class="rtile" aria-hidden="true">L</span></span><span class="rwho"><span class="rname">Louis</span></span><span class="rpts"><span class="rscore">13</span></span></div><div class="rrow"><span class="rplace">5</span><span class="rphoto"><img src="../../photos/willie.jpg" alt=""></span><span class="rwho"><span class="rname">Willie</span></span><span class="rpts"><span class="rscore">11</span></span></div><div class="rrow"><span class="rplace">6</span><span class="rphoto"><img src="../../photos/jeremy.jpg" alt=""></span><span class="rwho"><span class="rname">Jeremy</span></span><span class="rpts"><span class="rscore">10</span></span></div><div class="rrow"><span class="rplace">7</span><span class="rphoto"><img src="../../photos/jordi.jpg" alt=""></span><span class="rwho"><span class="rname">Ramon</span></span><span class="rpts"><span class="rscore">9</span></span></div><div class="rrow"><span class="rplace rtag">DNF</span><span class="rphoto"><span class="rtile" aria-hidden="true">A</span></span><span class="rwho"><span class="rname">Adriaan</span></span><span class="rpts"><span class="rscore">0</span></span></div></div></section><a class="nextrace" href="../calendar.html"><span class="kickline"><span class="kicker">Next · Mon 26 Oct</span><span class="togo">6 to go</span></span><span class="big">Nordschleife · GT4</span><span class="when" data-start="2026-10-26T18:00:00Z" data-evening="1 h">20:00 South Africa · 19:00 Spain</span></a>
 <nav class="tabs"><a class="on" data-tab="race" href="../index.html">Results</a><a class="" data-tab="standings" href="../standings.html">Standings</a><a class="" data-tab="calendar" href="../calendar.html">Calendar</a></nav>
 </div>
 

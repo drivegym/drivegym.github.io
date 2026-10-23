@@ -14,12 +14,12 @@
 <link rel="icon" href="../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=18">
+<link rel="stylesheet" href="../style.css?v=20">
 <script>
 function capText() {
   var root = document.documentElement;
   var px = parseFloat(getComputedStyle(root).fontSize);
-  if (px > 24) root.style.fontSize = "24px";
+  if (px > 20) root.style.fontSize = "20px";
 }
 capText();
 function zoneLabel(zone) {
@@ -61,7 +61,7 @@ function fitTitles() {
   });
 }
 function fitLines() {
-  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver").forEach(function (el) {
+  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag").forEach(function (el) {
     if (el.clientWidth < 1) return;
     el.style.fontSize = "";
     var size = parseFloat(getComputedStyle(el).fontSize);
@@ -83,28 +83,44 @@ function fitFilters() {
     }
   });
 }
+function fitMetal() {
+  document.querySelectorAll(".metaline").forEach(function (line) {
+    var crown = line.querySelector(".crownline");
+    if (!crown || line.clientWidth < 1) return;
+    crown.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(crown).fontSize);
+    while (size > 16 && line.scrollWidth > line.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      crown.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
 document.addEventListener("DOMContentLoaded", function () {
   applyLocalTimes();
   fitTitles();
   fitFilters();
   fitLines();
+  fitMetal();
 });
 window.addEventListener("pageshow", function () {
   capText();
   fitTitles();
   fitFilters();
   fitLines();
+  fitMetal();
 });
 window.addEventListener("resize", function () {
   fitTitles();
   fitFilters();
   fitLines();
+  fitMetal();
 });
 </script>
 </head>
 <body data-page="race">
 <div class="page">
-<section class="racehead"><div class="titleline"><img src="../icon.png" alt=""><h1>Spa Six Hour</h1></div><span class="sub">LMP2 · 19 Oct 2026</span><span class="crownline"><svg class="crown" viewBox="0 0 22 18" role="img" aria-label="Crown Jewel"><path d="M2 14 L1 4 L6.5 8 L11 1.5 L15.5 8 L21 4 L20 14 Z" fill="currentColor"></path><rect x="2" y="15" width="18" height="2.5" rx="1.2" fill="currentColor"></rect></svg>×2 points</span></section><section class="podium"><div class="podium-row"><div class="place p2"><div class="avatar" aria-hidden="true">J</div><span class="driver">Johan</span><span class="standing">2</span></div><div class="place p1"><div class="avatar" aria-hidden="true">L</div><span class="driver">Len</span><span class="standing">1</span></div><div class="place p3"><div class="avatar" aria-hidden="true">L</div><span class="driver">Louis</span><span class="standing">3</span></div></div></section><section class="awards"><div class="award drive"><span class="who-big">Louis</span><span class="label">Best Drive</span></div><div class="award"><span class="who-big">Len</span><span class="label"><svg class="watch" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="9.2" r="5" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="M6.4 2.2h3.2M8 9.2V6.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>2:11.565</span></div></section><section class="list"><div class="row"><span class="pos">1</span><div class="stack"><span class="who">Len</span><span class="detail">1:13:28.428 · 31 laps</span></div><span class="pts">40</span></div><div class="row"><span class="pos">2</span><div class="stack"><span class="who">Johan</span><span class="detail">+1 lap</span></div><span class="pts">36</span></div><div class="row"><span class="pos">3</span><div class="stack"><span class="who">Louis</span><span class="detail">+1 lap</span></div><span class="pts">30</span></div><div class="row"><span class="pos">4</span><div class="stack"><span class="who">Jaco</span><span class="detail">+2 laps</span></div><span class="pts">26</span></div><div class="row"><span class="pos">5</span><div class="stack"><span class="who">Jeremy</span><span class="detail">+2 laps</span></div><span class="pts">22</span></div><div class="row"><span class="pos">6</span><div class="stack"><span class="who">Ramon</span><span class="detail">+5 laps</span></div><span class="pts">20</span></div></section><a class="nextrace" href="calendar.html"><span class="kickline"><span class="kicker">Next · Mon 26 Oct</span><span class="togo">6 to go</span></span><span class="big">Nordschleife · GT4</span><span class="when" data-start="2026-10-26T18:00:00Z" data-evening="1 h">20:00 South Africa · 19:00 Spain</span></a>
+<section class="racehead"><div class="titleline"><img src="../icon.png" alt=""><h1>Spa Six Hour</h1></div><span class="sub">LMP2 · 19 Oct 2026</span><div class="metaline"><span class="crownline"><svg class="crown" viewBox="0 0 22 18" role="img" aria-label="Crown Jewel"><path d="M2 14 L1 4 L6.5 8 L11 1.5 L15.5 8 L21 4 L20 14 Z" fill="currentColor"></path><rect x="2" y="15" width="18" height="2.5" rx="1.2" fill="currentColor"></rect></svg>×2 points</span><span class="flaptime"><svg viewBox="0 0 24 24" role="img" aria-label="Fastest lap"><circle cx="12" cy="13.5" r="8" fill="none" stroke="#B48CFF" stroke-width="2.4"></circle><path d="M12 13.5V9M9 2.5h6M19 6l1.5-1.5" fill="none" stroke="#B48CFF" stroke-width="2.4" stroke-linecap="round"></path></svg>2:11.565</span></div></section><section class="results"><div class="rrows"><div class="rrow pod gold flap"><span class="rmetal"><span class="rnum">1</span></span><span class="rphoto"><img src="../photos/len.jpg" alt=""></span><span class="rwho"><span class="rname">Len</span><span class="rsub">31 laps</span><span class="rsub">1:13:28.428</span></span><span class="rpts"><span class="ricons"><svg viewBox="0 0 24 24" role="img" aria-label="Fastest lap"><circle cx="12" cy="13.5" r="8" fill="none" stroke="#B48CFF" stroke-width="2.4"></circle><path d="M12 13.5V9M9 2.5h6M19 6l1.5-1.5" fill="none" stroke="#B48CFF" stroke-width="2.4" stroke-linecap="round"></path></svg></span><span class="rscore">40</span></span></div><div class="rrow pod silver"><span class="rmetal"><span class="rnum">2</span></span><span class="rphoto"><img src="../photos/johan.jpg" alt=""></span><span class="rwho"><span class="rname">Johan</span><span class="rsub">+1 lap</span><span class="rsub">Gap 1:40.161</span></span><span class="rpts"><span class="rscore">36</span></span></div><div class="rrow pod bronze drive"><span class="rmetal"><span class="rnum">3</span></span><span class="rphoto"><span class="rtile" aria-hidden="true">L</span></span><span class="rwho"><span class="rname">Louis</span><span class="rsub">+1 lap</span><span class="rsub">Gap 2:35.579</span></span><span class="rpts"><span class="ricons"><svg viewBox="0 0 24 24" role="img" aria-label="Best Drive"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="#F5B400"></path></svg></span><span class="rscore">30</span></span></div><div class="rrow"><span class="rplace">4</span><span class="rphoto"><img src="../photos/jaco.jpg" alt=""></span><span class="rwho"><span class="rname">Jaco</span><span class="rsub">+2 laps</span></span><span class="rpts"><span class="rscore">26</span></span></div><div class="rrow"><span class="rplace">5</span><span class="rphoto"><img src="../photos/jeremy.jpg" alt=""></span><span class="rwho"><span class="rname">Jeremy</span><span class="rsub">+2 laps</span></span><span class="rpts"><span class="rscore">22</span></span></div><div class="rrow"><span class="rplace">6</span><span class="rphoto"><img src="../photos/jordi.jpg" alt=""></span><span class="rwho"><span class="rname">Ramon</span><span class="rsub">+5 laps</span></span><span class="rpts"><span class="rscore">20</span></span></div></div><div class="bestline" data-explain="best-drive">Best Drive<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="#F5B400"></path></svg></div></section><a class="nextrace" href="calendar.html"><span class="kickline"><span class="kicker">Next · Mon 26 Oct</span><span class="togo">6 to go</span></span><span class="big">Nordschleife · GT4</span><span class="when" data-start="2026-10-26T18:00:00Z" data-evening="1 h">20:00 South Africa · 19:00 Spain</span></a>
 <nav class="tabs"><a class="on" data-tab="race" href="index.html">Results</a><a class="" data-tab="standings" href="standings.html">Standings</a><a class="" data-tab="calendar" href="calendar.html">Calendar</a></nav>
 </div>
 
