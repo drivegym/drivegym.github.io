@@ -14,7 +14,7 @@
 <link rel="icon" href="../../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../style.css?v=32">
+<link rel="stylesheet" href="../../style.css?v=33">
 <link rel="prefetch" href="2026-05-11-gt3-gen2.html">
 <link rel="prefetch" href="2026-05-25-porsche-911-gt3-cup-4-0.html">
 <script>
@@ -38,14 +38,47 @@ function applyLocalTimes() {
   if (line) line.textContent = "Start time zone: " + zoneLabel(zone);
   if (!zone) return;
   document.querySelectorAll("[data-start]").forEach(function (el) {
+    if (el.hasAttribute("data-countdown")) return;
     var when = new Date(el.getAttribute("data-start"));
     var clock = new Intl.DateTimeFormat("en-GB", {
       hour: "2-digit", minute: "2-digit", hour12: false, timeZone: zone
     }).format(when);
+    if (el.hasAttribute("data-weekday")) {
+      var day = new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: zone }).format(when);
+      el.textContent = day + " " + clock;
+      return;
+    }
     var evening = el.getAttribute("data-evening") || "";
     el.textContent = evening ? clock + " · " + evening : clock;
   });
 }
+function countdownLine(startIso, eveningMin, now) {
+  var start = new Date(startIso);
+  if (!startIso || isNaN(start.getTime())) return "Next race";
+  var end = start.getTime() + (Number(eveningMin) || 0) * 60000;
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var raceDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  var days = Math.round((raceDay.getTime() - today.getTime()) / 86400000);
+  if (now.getTime() >= end) return "Race done · results soon";
+  if (now.getTime() >= start.getTime()) return "Racing now";
+  if (days >= 2) return "Next race · in " + days + " days";
+  if (days === 1) return "Next race · tomorrow";
+  var ms = start.getTime() - now.getTime();
+  if (ms > 3600000) return "Next race · today, in " + Math.floor(ms / 3600000) + " h";
+  var mins = Math.ceil(ms / 60000);
+  if (mins < 1) mins = 1;
+  return "Next race · in " + mins + " min";
+}
+function updateCountdowns(now) {
+  var clock = now || new Date();
+  document.querySelectorAll("[data-countdown]").forEach(function (el) {
+    el.textContent = countdownLine(el.getAttribute("data-when"), el.getAttribute("data-evening-min"), clock);
+  });
+}
+setInterval(function () { updateCountdowns(); }, 60000);
+document.addEventListener("visibilitychange", function () {
+  if (document.visibilityState === "visible") updateCountdowns();
+});
 function fitTitles() {
   document.querySelectorAll(".titleline").forEach(function (line) {
     var heading = line.querySelector("h1");
@@ -63,7 +96,7 @@ function fitTitles() {
   });
 }
 function fitLines() {
-  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, .sub, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag, .view[data-view=rhythm] .stat .who, .stat .mom").forEach(function (el) {
+  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, h2.nexthead, .sub, .layout, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag, .view[data-view=rhythm] .stat .who, .stat .mom, .nextrace .kicker, .nextrace .big, .nextrace .when, .startcard .kicker, .startcard .zone, .kv .v, .carline span:last-child, .ahead").forEach(function (el) {
     if (el.clientWidth < 1) return;
     el.style.fontSize = "";
     var size = parseFloat(getComputedStyle(el).fontSize);
@@ -142,6 +175,7 @@ function showView(name) {
 }
 document.addEventListener("DOMContentLoaded", function () {
   applyLocalTimes();
+  updateCountdowns();
   fitTitles();
   fitFilters();
   fitLines();
@@ -340,6 +374,7 @@ window.addEventListener("pageshow", function () {
     sheet.classList.remove("return");
     sheet.classList.remove("leave");
   });
+  updateCountdowns();
   fitTitles();
   fitFilters();
   fitLines();
@@ -356,7 +391,7 @@ window.addEventListener("resize", function () {
 <body data-page="race" data-older="2026-05-11-gt3-gen2.html" data-newer="2026-05-25-porsche-911-gt3-cup-4-0.html">
 <div class="page">
 <div class="pane">
-<section class="racehead"><div class="titleline"><span class="raceno flag" role="img" aria-label="Race 17, Canada" style="background-image:url(../../flags/ca.webp)"><span aria-hidden="true">17</span></span><h1>Montreal</h1></div><span class="sub">18 May 2026 · Historic F1 1978 · 2/5</span></section><section class="results"><div class="rrows"><div class="rrow pod gold"><span class="rmetal"><span class="rnum">1</span></span><span class="rphoto"><img src="../../photos/len.jpg" alt=""></span><span class="rwho"><span class="rname">Len</span></span><span class="rpts"><span class="rscore">21</span></span></div><div class="rrow pod silver"><span class="rmetal"><span class="rnum">2</span></span><span class="rphoto"><img src="../../photos/jaco.jpg" alt=""></span><span class="rwho"><span class="rname">Jaco</span></span><span class="rpts"><span class="rscore">17</span></span></div><div class="rrow pod bronze"><span class="rmetal"><span class="rnum">3</span></span><span class="rphoto"><img src="../../photos/johan.jpg" alt=""></span><span class="rwho"><span class="rname">Johan</span></span><span class="rpts"><span class="rscore">15</span></span></div><div class="rrow"><span class="rplace">4</span><span class="rphoto"><img src="../../photos/willie.jpg" alt=""></span><span class="rwho"><span class="rname">Willie</span></span><span class="rpts"><span class="rscore">13</span></span></div><div class="rrow"><span class="rplace">5</span><span class="rphoto"><img src="../../photos/jordi.jpg" alt=""></span><span class="rwho"><span class="rname">Ramon</span></span><span class="rpts"><span class="rscore">11</span></span></div></div></section><a class="nextrace" href="../calendar.html"><span class="kickline"><span class="kicker">Next · Mon 26 Oct</span><span class="togo">6 to go</span></span><span class="big">Nordschleife · GT4</span><span class="when" data-start="2026-10-26T18:00:00Z" data-evening="1 h">20:00 South Africa · 19:00 Spain</span></a>
+<section class="racehead"><div class="titleline"><span class="raceno flag" role="img" aria-label="Race 17, Canada" style="background-image:url(../../flags/ca.webp)"><span aria-hidden="true">17</span></span><h1>Montreal</h1></div><span class="sub">18 May 2026 · Historic F1 1978 · 2/5</span></section><section class="results"><div class="rrows"><div class="rrow pod gold"><span class="rmetal"><span class="rnum">1</span></span><span class="rphoto"><img src="../../photos/len.jpg" alt=""></span><span class="rwho"><span class="rname">Len</span></span><span class="rpts"><span class="rscore">21</span></span></div><div class="rrow pod silver"><span class="rmetal"><span class="rnum">2</span></span><span class="rphoto"><img src="../../photos/jaco.jpg" alt=""></span><span class="rwho"><span class="rname">Jaco</span></span><span class="rpts"><span class="rscore">17</span></span></div><div class="rrow pod bronze"><span class="rmetal"><span class="rnum">3</span></span><span class="rphoto"><img src="../../photos/johan.jpg" alt=""></span><span class="rwho"><span class="rname">Johan</span></span><span class="rpts"><span class="rscore">15</span></span></div><div class="rrow"><span class="rplace">4</span><span class="rphoto"><img src="../../photos/willie.jpg" alt=""></span><span class="rwho"><span class="rname">Willie</span></span><span class="rpts"><span class="rscore">13</span></span></div><div class="rrow"><span class="rplace">5</span><span class="rphoto"><img src="../../photos/jordi.jpg" alt=""></span><span class="rwho"><span class="rname">Ramon</span></span><span class="rpts"><span class="rscore">11</span></span></div></div></section><a class="nextrace" href="../next.html"><span class="raceno flag" role="img" aria-label="Race 32, Germany" style="background-image:url(../../flags/de.webp)"><span aria-hidden="true">32</span></span><span class="cardtext"><span class="kickline"><span class="kicker" data-countdown data-when="2026-10-26T18:00:00Z" data-evening-min="67">Next race</span></span><span class="big">Nordschleife</span><span class="when">26 Oct · <span data-start="2026-10-26T18:00:00Z">19:00</span> · GT4</span></span><span class="chev" aria-hidden="true">›</span></a>
 </div>
 <nav class="tabs"><a class="on" data-tab="race" href="../index.html">Results</a><a class="" data-tab="standings" href="../standings.html">Standings</a><a class="" data-tab="calendar" href="../calendar.html">Calendar</a></nav>
 </div>

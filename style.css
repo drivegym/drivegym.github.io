@@ -125,10 +125,35 @@ nav.tabs a.on { color: #F5B400; }
 .watch { width: 16px; height: 16px; flex: none; }
 .award.drive .who-big { color: #F5B400; }
 .laps { font-weight: 400; font-size: 1rem; color: #B0B3B8; }
-.nextrace { margin: 16px 16px 20px; display: block; text-decoration: none; color: #17191C; background: #F5B400; border-radius: 0.75rem; padding: 18px; }
-.nextrace .kickline, .nextrace .kicker { color: #17191C; font-size: 1rem; font-weight: 600; }
-.nextrace .big { display: block; font-family: "Barlow Condensed", sans-serif; font-size: min(2rem, 8.5vw); font-weight: 700; text-transform: uppercase; margin-top: 0.125rem; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nextrace .when { display: block; font-size: min(1.125rem, 5.5vw); margin-top: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nextrace { margin: 16px 16px 20px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.875rem; align-items: center; text-decoration: none; color: #EDEAE3; background: #202328; border: 2px solid #F5B400; border-radius: 0.75rem; padding: 1.125rem; }
+.nextrace .cardtext { min-width: 0; }
+.nextrace .kickline, .nextrace .kicker { color: #F5B400; font-size: 1rem; font-weight: 600; }
+.nextrace .kicker { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nextrace .big { display: block; font-family: "Barlow Condensed", sans-serif; font-size: min(2rem, 8.5vw); font-weight: 700; text-transform: uppercase; margin-top: 0.125rem; line-height: 1.05; color: #EDEAE3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nextrace .when { display: block; font-size: min(1.125rem, 5.5vw); margin-top: 0.25rem; color: #D8D5CE; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nextrace .chev { color: #F5B400; font-size: 2rem; font-weight: 600; line-height: 1; }
+.layout { font-size: 1rem; color: #B0B3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.startcard { margin: 1rem 0.875rem 0; background: #202328; border-radius: 12px; padding: 0.875rem 1rem; border-left: 4px solid #F5B400; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.startcard .text { min-width: 0; }
+.startcard .kicker { display: block; font-size: 1rem; font-weight: 600; color: #F5B400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.startcard .clock { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 2rem; line-height: 1.1; margin-top: 0.125rem; white-space: nowrap; }
+.startcard .zone { font-size: 1rem; color: #B0B3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.startcard .evening { text-align: right; font-size: 1.0625rem; color: #D8D5CE; flex: none; white-space: nowrap; }
+h2.nexthead { margin: 1.5rem 0.875rem 0.5rem; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 1.375rem; letter-spacing: 0.02em; text-transform: uppercase; color: #F5B400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prose { margin: 0.25rem 0.875rem 0.5rem; color: #D8D5CE; }
+.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; align-items: baseline; padding: 0.625rem 0; border-bottom: 1px solid #343840; }
+.kv:last-child { border-bottom: none; }
+.kv .k { color: #B0B3B8; white-space: nowrap; }
+.kv .v { text-align: right; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stake { display: grid; grid-template-columns: 1.75rem minmax(0, 1fr) 3.25rem 3rem; gap: 0.625rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #343840; }
+.stake:last-child { border-bottom: none; }
+.ahead { text-align: right; color: #B0B3B8; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stake .pts { font-size: 1.5rem; }
+.carline { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid #343840; }
+.carline:last-child { border-bottom: none; }
+.carline span:last-child { color: #D8D5CE; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+ol.steps { margin: 0.25rem 0.875rem 0; padding-left: 1.4rem; color: #D8D5CE; }
+ol.steps li { margin: 0.35rem 0; }
 .hidden { display: none; }
 .metaline { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; white-space: nowrap; }
 .metaline .crownline { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -209,6 +234,8 @@ body.past nav.tabs { border-top-color: #4A4F57; }
 body.past nav.tabs a.on, body.past .chev, body.past .back, body.past .togo, body.past .crownline,
 body.past .next .kickline, body.past .next .kicker { color: #B0B3B8; }
 body.past .next { border-color: #4A4F57; }
-body.past .nextrace { background: #4A4F57; color: #EDEAE3; }
-body.past .nextrace .kickline, body.past .nextrace .kicker { color: #EDEAE3; }
+body.past .nextrace { border-color: #4A4F57; }
+body.past .nextrace .kickline, body.past .nextrace .kicker, body.past .nextrace .chev { color: #B0B3B8; }
+body.past .startcard { border-left-color: #4A4F57; }
+body.past .startcard .kicker { color: #B0B3B8; }
 body.past header.top { border-bottom-color: #4A4F57; }
