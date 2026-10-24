@@ -96,6 +96,35 @@ function fitMetal() {
     }
   });
 }
+function pageStem() {
+  var counted = document.body && document.body.getAttribute("data-count-as");
+  if (counted) {
+    if (counted.length > 5 && counted.slice(-5).toLowerCase() === ".html")
+      counted = counted.slice(0, -5);
+    return counted || "/";
+  }
+  var path = location.pathname || "/";
+  if (path.length > 5 && path.slice(-5).toLowerCase() === ".html") path = path.slice(0, -5);
+  if (path.length > 1 && path.charAt(path.length - 1) === "/") path = path.slice(0, -1);
+  return path || "/";
+}
+function cupSlug(cup) {
+  var out = "";
+  var i;
+  for (i = 0; i < cup.length; i++) {
+    var code = cup.charCodeAt(i);
+    var alnum = (code >= 48 && code <= 57) || (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+    out += alnum ? cup.charAt(i).toLowerCase() : "-";
+  }
+  return out.replace(/^-+|-+$/g, "");
+}
+function countTab(path) {
+  try {
+    if (window.goatcounter && window.goatcounter.count) {
+      window.goatcounter.count({ path: path, title: document.title, event: false });
+    }
+  } catch (e) { /* never let counting affect the page */ }
+}
 function showView(name) {
   document.querySelectorAll(".viewtabs button").forEach(function (btn) {
     var on = btn.getAttribute("data-view") === name;
@@ -116,7 +145,12 @@ document.addEventListener("DOMContentLoaded", function () {
   fitLines();
   fitMetal();
   document.querySelectorAll(".viewtabs button").forEach(function (btn) {
-    btn.addEventListener("click", function () { showView(btn.getAttribute("data-view")); });
+    btn.addEventListener("click", function () {
+      var name = btn.getAttribute("data-view");
+      var already = btn.classList.contains("on");
+      showView(name);
+      if (!already && name) countTab(pageStem() + "/" + name);
+    });
   });
   var asked = location.hash.replace("#", "");
   if (asked === "pace" || asked === "rhythm") showView(asked);
@@ -151,6 +185,36 @@ if (current) {
   });
 }
 </script>
+
+
+<script>
+(function () {
+  try {
+    var hash = location.hash || "";
+    var stem = pageStem();
+    var path = "";
+    var kind = document.body.getAttribute("data-page");
+    var countAs = document.body.getAttribute("data-count-as");
+    if (countAs) path = countAs;
+    if (kind === "race") {
+      var asked = hash.replace("#", "");
+      if ((asked === "pace" || asked === "rhythm") && document.querySelector(".view[data-view='" + asked + "']"))
+        path = stem + "/" + asked;
+    } else if (kind === "standings") {
+      if (hash === "#series") path = stem + "/series";
+      else if (hash === "#best") path = stem + "/best-drive";
+      else if (hash.indexOf("#series-") === 0)
+        path = stem + "/series/" + cupSlug(decodeURIComponent(hash.slice(8)));
+    }
+    if (path) {
+      window.goatcounter = window.goatcounter || {};
+      window.goatcounter.path = path;
+    }
+  } catch (e) {}
+})();
+</script>
+<script data-goatcounter="https://drivegym.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 
 </body>
 </html>
