@@ -63,7 +63,12 @@ h2.series-name { margin: 0.125rem 1.125rem 0; font-family: "Barlow Condensed", s
 .list.flush { padding: 4px 0; }
 .series-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; width: 100%; min-height: 4rem; padding: 10px 16px; border: none; border-bottom: 1px solid #343840; background: transparent; color: #EDEAE3; text-align: left; }
 .series-row .name { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 1.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.series-row .meta { font-size: 1rem; color: #B0B3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grouplabel { margin: 1.125rem 1.125rem 0.5rem; font-family: "Barlow Condensed", sans-serif; font-weight: 600; font-size: 1.0625rem; letter-spacing: 0.04em; text-transform: uppercase; color: #D8D5CE; }
+.series-row:last-child { border-bottom: none; }
+.series-row .meta { font-size: 1rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.series-row .meta b { font-weight: 600; }
+.series-row .meta.live { color: #F5B400; }
+.series-row .meta.done { color: #D8D5CE; }
 .series-row .chev { grid-row: span 2; }
 .dots { display: flex; gap: 6px; align-items: center; min-height: 14px; }
 .dot { width: 14px; height: 14px; border-radius: 7px; background: #8A8F98; flex: none; }
