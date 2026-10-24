@@ -8,14 +8,48 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="DriveGym">
-<title>Brands Hatch · GT4 results</title>
+<title>Brands Hatch results</title>
 <link rel="manifest" href="../../manifest.webmanifest">
 <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
 <link rel="icon" href="../../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../style.css?v=28">
+<link rel="stylesheet" href="../../style.css?v=31">
+<link rel="prefetch" href="2026-08-03-stock-usa-gen3.html">
+<link rel="prefetch" href="2026-08-17-porsche-911-gt3-cup-4-0.html">
 <script>
+window.addEventListener("pageswap", function (event) {
+  if (!event.viewTransition) return;
+  var dir = raceSwipeDir();
+  if (!dir) {
+    if (event.viewTransition.skipTransition) event.viewTransition.skipTransition();
+    return;
+  }
+  try { event.viewTransition.types.add(dir); } catch (e) {}
+});
+window.addEventListener("pagereveal", function (event) {
+  var dir = raceSwipeDir();
+  try {
+    sessionStorage.removeItem("dg-race-swipe");
+    sessionStorage.removeItem("dg-race-swipe-at");
+  } catch (e) {}
+  if (!event.viewTransition) return;
+  if (!dir) {
+    if (event.viewTransition.skipTransition) event.viewTransition.skipTransition();
+    return;
+  }
+  try { event.viewTransition.types.add(dir); } catch (e) {}
+});
+function raceSwipeDir() {
+  try {
+    var dir = sessionStorage.getItem("dg-race-swipe") || "";
+    var at = Number(sessionStorage.getItem("dg-race-swipe-at") || 0);
+    if ((dir !== "newer" && dir !== "older") || !at || Date.now() - at > 2000) return "";
+    return dir;
+  } catch (e) {
+    return "";
+  }
+}
 function capText() {
   var root = document.documentElement;
   var px = parseFloat(getComputedStyle(root).fontSize);
@@ -154,7 +188,173 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   var asked = location.hash.replace("#", "");
   if (asked === "pace" || asked === "rhythm") showView(asked);
+  armRaceSwipe();
 });
+function armRaceSwipe() {
+  if (!document.body || document.body.getAttribute("data-page") !== "race") return;
+  var older = document.body.getAttribute("data-older") || "";
+  var newer = document.body.getAttribute("data-newer") || "";
+  if (!older && !newer) return;
+  var olderTabs = document.body.getAttribute("data-older-tabs") === "1";
+  var newerTabs = document.body.getAttribute("data-newer-tabs") === "1";
+  var sheet = document.querySelector(".pane");
+  if (!sheet) return;
+  var startX = 0;
+  var startY = 0;
+  var startT = 0;
+  var watching = false;
+  var dragging = false;
+  var scrolling = false;
+  var gone = false;
+  function openRace(href, hasTabs, dir) {
+    if (!href || gone) return;
+    gone = true;
+    var on = document.querySelector(".viewtabs button.on");
+    var name = on ? (on.getAttribute("data-view") || "") : "";
+    var hash = (hasTabs && (name === "pace" || name === "rhythm")) ? ("#" + name) : "";
+    try {
+      sessionStorage.setItem("dg-race-swipe", dir);
+      sessionStorage.setItem("dg-race-swipe-at", String(Date.now()));
+    } catch (e) {}
+    window.location.href = href + hash;
+  }
+  function shift(dx) {
+    var width = window.innerWidth || 1;
+    var href = dx < 0 ? newer : older;
+    var x = dx;
+    if (!href) {
+      var cap = Math.min(48, width * 0.12);
+      x = dx < 0 ? Math.max(dx * 0.2, -cap) : Math.min(dx * 0.2, cap);
+    }
+    sheet.style.transform = "translateX(" + x + "px)";
+  }
+  function springBack() {
+    dragging = false;
+    sheet.classList.remove("follow");
+    sheet.classList.add("return");
+    void sheet.offsetWidth;
+    sheet.style.transform = "translateX(0px)";
+    var clear = function () {
+      sheet.style.transform = "";
+      sheet.classList.remove("return");
+      sheet.removeEventListener("transitionend", clear);
+    };
+    sheet.addEventListener("transitionend", clear);
+  }
+  function slideOff(dir) {
+    var href = dir === "newer" ? newer : older;
+    var hasTabs = dir === "newer" ? newerTabs : olderTabs;
+    if (!href) {
+      springBack();
+      return;
+    }
+    var width = window.innerWidth || 1;
+    sheet.classList.remove("follow");
+    sheet.classList.add("leave");
+    void sheet.offsetWidth;
+    sheet.style.transform = "translateX(" + (dir === "newer" ? -width : width) + "px)";
+    var left = false;
+    var go = function () {
+      if (left) return;
+      left = true;
+      openRace(href, hasTabs, dir);
+    };
+    var timer = setTimeout(go, 280);
+    sheet.addEventListener("transitionend", function () {
+      clearTimeout(timer);
+      go();
+    });
+  }
+  document.addEventListener("touchstart", function (event) {
+    if (gone) return;
+    if (event.touches.length !== 1) {
+      watching = false;
+      if (dragging) springBack();
+      dragging = false;
+      return;
+    }
+    var touch = event.touches[0];
+    var x = touch.clientX;
+    if (x < 30 || x > window.innerWidth - 30) {
+      watching = false;
+      return;
+    }
+    watching = true;
+    dragging = false;
+    scrolling = false;
+    startX = x;
+    startY = touch.clientY;
+    startT = event.timeStamp;
+  }, { passive: true });
+  document.addEventListener("touchmove", function (event) {
+    if (!watching || gone) return;
+    if (event.touches.length !== 1) {
+      watching = false;
+      if (dragging) springBack();
+      dragging = false;
+      return;
+    }
+    var touch = event.touches[0];
+    var dx = touch.clientX - startX;
+    var dy = touch.clientY - startY;
+    if (scrolling) return;
+    if (!dragging) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+        scrolling = true;
+        return;
+      }
+      if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
+      dragging = true;
+      sheet.classList.add("follow");
+      sheet.classList.remove("return");
+      sheet.classList.remove("leave");
+    }
+    if (event.cancelable) event.preventDefault();
+    shift(dx);
+  }, { passive: false });
+  document.addEventListener("touchend", function (event) {
+    if (!watching || gone) return;
+    watching = false;
+    var touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) {
+      if (dragging) springBack();
+      dragging = false;
+      return;
+    }
+    var dx = touch.clientX - startX;
+    var dy = touch.clientY - startY;
+    var dt = Math.max(event.timeStamp - startT, 1);
+    var sideways = Math.abs(dx) >= Math.abs(dy) * 2;
+    var flick = sideways && Math.abs(dx) >= 40 && (Math.abs(dx) / dt) >= 0.4;
+    var far = Math.abs(dx) >= window.innerWidth * 0.35;
+    var commit = sideways && (far || flick);
+    dragging = false;
+    if (!commit) {
+      if (sheet.style.transform) springBack();
+      return;
+    }
+    slideOff(dx < 0 ? "newer" : "older");
+  }, { passive: true });
+  document.addEventListener("touchcancel", function () {
+    watching = false;
+    if (dragging) springBack();
+    dragging = false;
+  }, { passive: true });
+  document.addEventListener("keydown", function (event) {
+    if (gone || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    var tag = event.target && event.target.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || (event.target && event.target.isContentEditable)) return;
+    if (event.key === "ArrowRight") {
+      if (!newer) return;
+      event.preventDefault();
+      openRace(newer, newerTabs, "newer");
+    } else if (event.key === "ArrowLeft") {
+      if (!older) return;
+      event.preventDefault();
+      openRace(older, olderTabs, "older");
+    }
+  });
+}
 window.addEventListener("pageshow", function () {
   capText();
   fitTitles();
@@ -170,9 +370,11 @@ window.addEventListener("resize", function () {
 });
 </script>
 </head>
-<body data-page="race">
+<body data-page="race" data-older="2026-08-03-stock-usa-gen3.html" data-newer="2026-08-17-porsche-911-gt3-cup-4-0.html">
 <div class="page">
-<section class="racehead"><div class="titleline"><img src="../../icon.png" alt=""><h1>Brands Hatch · GT4</h1></div><span class="sub">GT4 · 1/4 · 10 Aug 2026</span></section><section class="results"><div class="rrows"><div class="rrow pod gold"><span class="rmetal"><span class="rnum">1</span></span><span class="rphoto"><img src="../../photos/len.jpg" alt=""></span><span class="rwho"><span class="rname">Len</span></span><span class="rpts"><span class="rscore">21</span></span></div><div class="rrow pod silver"><span class="rmetal"><span class="rnum">2</span></span><span class="rphoto"><img src="../../photos/johan.jpg" alt=""></span><span class="rwho"><span class="rname">Johan</span></span><span class="rpts"><span class="rscore">17</span></span></div><div class="rrow pod bronze"><span class="rmetal"><span class="rnum">3</span></span><span class="rphoto"><img src="../../photos/jaco.jpg" alt=""></span><span class="rwho"><span class="rname">Jaco</span></span><span class="rpts"><span class="rscore">15</span></span></div><div class="rrow"><span class="rplace">4</span><span class="rphoto"><span class="rtile" aria-hidden="true">L</span></span><span class="rwho"><span class="rname">Louis</span></span><span class="rpts"><span class="rscore">13</span></span></div><div class="rrow"><span class="rplace">5</span><span class="rphoto"><img src="../../photos/willie.jpg" alt=""></span><span class="rwho"><span class="rname">Willie</span></span><span class="rpts"><span class="rscore">11</span></span></div><div class="rrow"><span class="rplace">6</span><span class="rphoto"><img src="../../photos/jeremy.jpg" alt=""></span><span class="rwho"><span class="rname">Jeremy</span></span><span class="rpts"><span class="rscore">10</span></span></div><div class="rrow"><span class="rplace">7</span><span class="rphoto"><img src="../../photos/jordi.jpg" alt=""></span><span class="rwho"><span class="rname">Ramon</span></span><span class="rpts"><span class="rscore">9</span></span></div><div class="rrow"><span class="rplace rtag">DNF</span><span class="rphoto"><img src="../../photos/adriaan.jpg" alt=""></span><span class="rwho"><span class="rname">Adriaan</span></span><span class="rpts"><span class="rscore">0</span></span></div></div></section><a class="nextrace" href="../calendar.html"><span class="kickline"><span class="kicker">Next · Mon 26 Oct</span><span class="togo">6 to go</span></span><span class="big">Nordschleife · GT4</span><span class="when" data-start="2026-10-26T18:00:00Z" data-evening="1 h">20:00 South Africa · 19:00 Spain</span></a>
+<div class="pane">
+<section class="racehead"><div class="titleline"><span class="raceno flag" role="img" aria-label="Race 25, United Kingdom" style="background-image:url(../../flags/gb.webp)"><span aria-hidden="true">25</span></span><h1>Brands Hatch</h1></div><span class="sub">10 Aug 2026 · GT4 · 1/4</span></section><section class="results"><div class="rrows"><div class="rrow pod gold"><span class="rmetal"><span class="rnum">1</span></span><span class="rphoto"><img src="../../photos/len.jpg" alt=""></span><span class="rwho"><span class="rname">Len</span></span><span class="rpts"><span class="rscore">21</span></span></div><div class="rrow pod silver"><span class="rmetal"><span class="rnum">2</span></span><span class="rphoto"><img src="../../photos/johan.jpg" alt=""></span><span class="rwho"><span class="rname">Johan</span></span><span class="rpts"><span class="rscore">17</span></span></div><div class="rrow pod bronze"><span class="rmetal"><span class="rnum">3</span></span><span class="rphoto"><img src="../../photos/jaco.jpg" alt=""></span><span class="rwho"><span class="rname">Jaco</span></span><span class="rpts"><span class="rscore">15</span></span></div><div class="rrow"><span class="rplace">4</span><span class="rphoto"><span class="rtile" aria-hidden="true">L</span></span><span class="rwho"><span class="rname">Louis</span></span><span class="rpts"><span class="rscore">13</span></span></div><div class="rrow"><span class="rplace">5</span><span class="rphoto"><img src="../../photos/willie.jpg" alt=""></span><span class="rwho"><span class="rname">Willie</span></span><span class="rpts"><span class="rscore">11</span></span></div><div class="rrow"><span class="rplace">6</span><span class="rphoto"><img src="../../photos/jeremy.jpg" alt=""></span><span class="rwho"><span class="rname">Jeremy</span></span><span class="rpts"><span class="rscore">10</span></span></div><div class="rrow"><span class="rplace">7</span><span class="rphoto"><img src="../../photos/jordi.jpg" alt=""></span><span class="rwho"><span class="rname">Ramon</span></span><span class="rpts"><span class="rscore">9</span></span></div><div class="rrow"><span class="rplace rtag">DNF</span><span class="rphoto"><img src="../../photos/adriaan.jpg" alt=""></span><span class="rwho"><span class="rname">Adriaan</span></span><span class="rpts"><span class="rscore">0</span></span></div></div></section><a class="nextrace" href="../calendar.html"><span class="kickline"><span class="kicker">Next · Mon 26 Oct</span><span class="togo">6 to go</span></span><span class="big">Nordschleife · GT4</span><span class="when" data-start="2026-10-26T18:00:00Z" data-evening="1 h">20:00 South Africa · 19:00 Spain</span></a>
+</div>
 <nav class="tabs"><a class="on" data-tab="race" href="../index.html">Results</a><a class="" data-tab="standings" href="../standings.html">Standings</a><a class="" data-tab="calendar" href="../calendar.html">Calendar</a></nav>
 </div>
 

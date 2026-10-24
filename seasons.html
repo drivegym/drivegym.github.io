@@ -14,8 +14,40 @@
 <link rel="icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=28">
+<link rel="stylesheet" href="style.css?v=31">
 <script>
+window.addEventListener("pageswap", function (event) {
+  if (!event.viewTransition) return;
+  var dir = raceSwipeDir();
+  if (!dir) {
+    if (event.viewTransition.skipTransition) event.viewTransition.skipTransition();
+    return;
+  }
+  try { event.viewTransition.types.add(dir); } catch (e) {}
+});
+window.addEventListener("pagereveal", function (event) {
+  var dir = raceSwipeDir();
+  try {
+    sessionStorage.removeItem("dg-race-swipe");
+    sessionStorage.removeItem("dg-race-swipe-at");
+  } catch (e) {}
+  if (!event.viewTransition) return;
+  if (!dir) {
+    if (event.viewTransition.skipTransition) event.viewTransition.skipTransition();
+    return;
+  }
+  try { event.viewTransition.types.add(dir); } catch (e) {}
+});
+function raceSwipeDir() {
+  try {
+    var dir = sessionStorage.getItem("dg-race-swipe") || "";
+    var at = Number(sessionStorage.getItem("dg-race-swipe-at") || 0);
+    if ((dir !== "newer" && dir !== "older") || !at || Date.now() - at > 2000) return "";
+    return dir;
+  } catch (e) {
+    return "";
+  }
+}
 function capText() {
   var root = document.documentElement;
   var px = parseFloat(getComputedStyle(root).fontSize);
@@ -154,7 +186,173 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   var asked = location.hash.replace("#", "");
   if (asked === "pace" || asked === "rhythm") showView(asked);
+  armRaceSwipe();
 });
+function armRaceSwipe() {
+  if (!document.body || document.body.getAttribute("data-page") !== "race") return;
+  var older = document.body.getAttribute("data-older") || "";
+  var newer = document.body.getAttribute("data-newer") || "";
+  if (!older && !newer) return;
+  var olderTabs = document.body.getAttribute("data-older-tabs") === "1";
+  var newerTabs = document.body.getAttribute("data-newer-tabs") === "1";
+  var sheet = document.querySelector(".pane");
+  if (!sheet) return;
+  var startX = 0;
+  var startY = 0;
+  var startT = 0;
+  var watching = false;
+  var dragging = false;
+  var scrolling = false;
+  var gone = false;
+  function openRace(href, hasTabs, dir) {
+    if (!href || gone) return;
+    gone = true;
+    var on = document.querySelector(".viewtabs button.on");
+    var name = on ? (on.getAttribute("data-view") || "") : "";
+    var hash = (hasTabs && (name === "pace" || name === "rhythm")) ? ("#" + name) : "";
+    try {
+      sessionStorage.setItem("dg-race-swipe", dir);
+      sessionStorage.setItem("dg-race-swipe-at", String(Date.now()));
+    } catch (e) {}
+    window.location.href = href + hash;
+  }
+  function shift(dx) {
+    var width = window.innerWidth || 1;
+    var href = dx < 0 ? newer : older;
+    var x = dx;
+    if (!href) {
+      var cap = Math.min(48, width * 0.12);
+      x = dx < 0 ? Math.max(dx * 0.2, -cap) : Math.min(dx * 0.2, cap);
+    }
+    sheet.style.transform = "translateX(" + x + "px)";
+  }
+  function springBack() {
+    dragging = false;
+    sheet.classList.remove("follow");
+    sheet.classList.add("return");
+    void sheet.offsetWidth;
+    sheet.style.transform = "translateX(0px)";
+    var clear = function () {
+      sheet.style.transform = "";
+      sheet.classList.remove("return");
+      sheet.removeEventListener("transitionend", clear);
+    };
+    sheet.addEventListener("transitionend", clear);
+  }
+  function slideOff(dir) {
+    var href = dir === "newer" ? newer : older;
+    var hasTabs = dir === "newer" ? newerTabs : olderTabs;
+    if (!href) {
+      springBack();
+      return;
+    }
+    var width = window.innerWidth || 1;
+    sheet.classList.remove("follow");
+    sheet.classList.add("leave");
+    void sheet.offsetWidth;
+    sheet.style.transform = "translateX(" + (dir === "newer" ? -width : width) + "px)";
+    var left = false;
+    var go = function () {
+      if (left) return;
+      left = true;
+      openRace(href, hasTabs, dir);
+    };
+    var timer = setTimeout(go, 280);
+    sheet.addEventListener("transitionend", function () {
+      clearTimeout(timer);
+      go();
+    });
+  }
+  document.addEventListener("touchstart", function (event) {
+    if (gone) return;
+    if (event.touches.length !== 1) {
+      watching = false;
+      if (dragging) springBack();
+      dragging = false;
+      return;
+    }
+    var touch = event.touches[0];
+    var x = touch.clientX;
+    if (x < 30 || x > window.innerWidth - 30) {
+      watching = false;
+      return;
+    }
+    watching = true;
+    dragging = false;
+    scrolling = false;
+    startX = x;
+    startY = touch.clientY;
+    startT = event.timeStamp;
+  }, { passive: true });
+  document.addEventListener("touchmove", function (event) {
+    if (!watching || gone) return;
+    if (event.touches.length !== 1) {
+      watching = false;
+      if (dragging) springBack();
+      dragging = false;
+      return;
+    }
+    var touch = event.touches[0];
+    var dx = touch.clientX - startX;
+    var dy = touch.clientY - startY;
+    if (scrolling) return;
+    if (!dragging) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+        scrolling = true;
+        return;
+      }
+      if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
+      dragging = true;
+      sheet.classList.add("follow");
+      sheet.classList.remove("return");
+      sheet.classList.remove("leave");
+    }
+    if (event.cancelable) event.preventDefault();
+    shift(dx);
+  }, { passive: false });
+  document.addEventListener("touchend", function (event) {
+    if (!watching || gone) return;
+    watching = false;
+    var touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) {
+      if (dragging) springBack();
+      dragging = false;
+      return;
+    }
+    var dx = touch.clientX - startX;
+    var dy = touch.clientY - startY;
+    var dt = Math.max(event.timeStamp - startT, 1);
+    var sideways = Math.abs(dx) >= Math.abs(dy) * 2;
+    var flick = sideways && Math.abs(dx) >= 40 && (Math.abs(dx) / dt) >= 0.4;
+    var far = Math.abs(dx) >= window.innerWidth * 0.35;
+    var commit = sideways && (far || flick);
+    dragging = false;
+    if (!commit) {
+      if (sheet.style.transform) springBack();
+      return;
+    }
+    slideOff(dx < 0 ? "newer" : "older");
+  }, { passive: true });
+  document.addEventListener("touchcancel", function () {
+    watching = false;
+    if (dragging) springBack();
+    dragging = false;
+  }, { passive: true });
+  document.addEventListener("keydown", function (event) {
+    if (gone || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    var tag = event.target && event.target.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || (event.target && event.target.isContentEditable)) return;
+    if (event.key === "ArrowRight") {
+      if (!newer) return;
+      event.preventDefault();
+      openRace(newer, newerTabs, "newer");
+    } else if (event.key === "ArrowLeft") {
+      if (!older) return;
+      event.preventDefault();
+      openRace(older, olderTabs, "older");
+    }
+  });
+}
 window.addEventListener("pageshow", function () {
   capText();
   fitTitles();
@@ -172,6 +370,7 @@ window.addEventListener("resize", function () {
 </head>
 <body data-page="seasons">
 <div class="page">
+<div class="pane">
 <section class="head"><div class="titleline"><img src="icon.png" alt=""><h1>Seasons</h1></div><span class="caption">Choose a season</span></section><section class="list"><div class="season-row soon"><span class="yr">2027</span><span class="stack"><span class="who">Coming soon</span><span class="detail">Calendar not out yet</span></span></div><a class="season-row" data-year="2026" href="2026/standings.html"><span class="yr">2026</span><span class="stack"><span class="who">Current season</span><span class="detail">31 of 37 races · Len leads</span></span><span class="chev" aria-hidden="true">›</span></a></section>
 <script>
 var from = "standings";
@@ -188,6 +387,7 @@ document.querySelectorAll("[data-year]").forEach(function (link) {
 });
 </script>
 
+</div>
 <nav class="tabs"><a class="" data-tab="race" href="index.html">Results</a><a class="" data-tab="standings" href="standings.html">Standings</a><a class="" data-tab="calendar" href="calendar.html">Calendar</a></nav>
 </div>
 
