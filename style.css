@@ -5,7 +5,7 @@ body { margin: 0; background: #17191C; color: #EDEAE3; font-family: "Barlow", sa
 a { color: inherit; text-decoration: none; }
 button { font-family: "Barlow", sans-serif; font-size: 1.0625rem; font-weight: 600; cursor: pointer; }
 .page { min-height: 100vh; display: flex; flex-direction: column; padding-bottom: calc(4.25rem + env(safe-area-inset-bottom)); max-width: 100%; }
-.pane { min-width: 0; background: #17191C; }
+.pane { min-width: 0; background: #17191C; touch-action: pan-y; }
 .pane.follow { transition: none; }
 .pane.return { transition: transform 200ms ease; }
 .pane.leave { transition: transform 250ms ease-out; }
@@ -98,7 +98,7 @@ h2.series-name { margin: 0.125rem 1.125rem 0; font-family: "Barlow Condensed", s
 .pts { text-align: right; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 1.625rem; font-variant-numeric: tabular-nums; }
 .note { padding: 0.75rem 1.125rem 0; font-size: 1.0625rem; line-height: 1.45; color: #B0B3B8; }
 .empty { padding: 0.875rem 0; font-size: 1.0625rem; color: #B0B3B8; }
-nav.tabs { position: fixed; left: 0; right: auto; bottom: 0; width: 100vw; max-width: 100vw; box-sizing: border-box; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid #F5B400; background: #141618; padding-bottom: env(safe-area-inset-bottom); z-index: 2; view-transition-name: site-tabs; }
+nav.tabs { position: fixed; left: 0; right: auto; bottom: 0; width: 100vw; max-width: 100vw; box-sizing: border-box; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid #F5B400; background: #141618; padding-bottom: env(safe-area-inset-bottom); z-index: 2; }
 nav.tabs a { padding: 1.125rem 0; text-align: center; font-size: 1.0625rem; font-weight: 600; color: #D8D5CE; min-height: 3rem; }
 nav.tabs a.on { color: #F5B400; }
 .racehead { padding: 18px 16px 4px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -212,17 +212,3 @@ body.past .next { border-color: #4A4F57; }
 body.past .nextrace { background: #4A4F57; color: #EDEAE3; }
 body.past .nextrace .kickline, body.past .nextrace .kicker { color: #EDEAE3; }
 body.past header.top { border-bottom-color: #4A4F57; }
-@view-transition { navigation: auto; }
-::view-transition-old(root),
-::view-transition-new(root) { animation-duration: 0s; }
-::view-transition-group(site-tabs),
-::view-transition-old(site-tabs),
-::view-transition-new(site-tabs) { animation: none; }
-@keyframes race-to-left { from { transform: translateX(0); } to { transform: translateX(-100%); } }
-@keyframes race-from-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
-@keyframes race-to-right { from { transform: translateX(0); } to { transform: translateX(100%); } }
-@keyframes race-from-left { from { transform: translateX(-100%); } to { transform: translateX(0); } }
-:root:active-view-transition-type(newer)::view-transition-old(root) { animation: 250ms ease-out both race-to-left; }
-:root:active-view-transition-type(newer)::view-transition-new(root) { animation: 250ms ease-out both race-from-right; }
-:root:active-view-transition-type(older)::view-transition-old(root) { animation: 250ms ease-out both race-to-right; }
-:root:active-view-transition-type(older)::view-transition-new(root) { animation: 250ms ease-out both race-from-left; }

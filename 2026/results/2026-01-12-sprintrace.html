@@ -14,41 +14,9 @@
 <link rel="icon" href="../../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../style.css?v=31">
+<link rel="stylesheet" href="../../style.css?v=32">
 <link rel="prefetch" href="2026-01-19-sprintrace.html">
 <script>
-window.addEventListener("pageswap", function (event) {
-  if (!event.viewTransition) return;
-  var dir = raceSwipeDir();
-  if (!dir) {
-    if (event.viewTransition.skipTransition) event.viewTransition.skipTransition();
-    return;
-  }
-  try { event.viewTransition.types.add(dir); } catch (e) {}
-});
-window.addEventListener("pagereveal", function (event) {
-  var dir = raceSwipeDir();
-  try {
-    sessionStorage.removeItem("dg-race-swipe");
-    sessionStorage.removeItem("dg-race-swipe-at");
-  } catch (e) {}
-  if (!event.viewTransition) return;
-  if (!dir) {
-    if (event.viewTransition.skipTransition) event.viewTransition.skipTransition();
-    return;
-  }
-  try { event.viewTransition.types.add(dir); } catch (e) {}
-});
-function raceSwipeDir() {
-  try {
-    var dir = sessionStorage.getItem("dg-race-swipe") || "";
-    var at = Number(sessionStorage.getItem("dg-race-swipe-at") || 0);
-    if ((dir !== "newer" && dir !== "older") || !at || Date.now() - at > 2000) return "";
-    return dir;
-  } catch (e) {
-    return "";
-  }
-}
 function capText() {
   var root = document.documentElement;
   var px = parseFloat(getComputedStyle(root).fontSize);
@@ -205,16 +173,25 @@ function armRaceSwipe() {
   var dragging = false;
   var scrolling = false;
   var gone = false;
+  function resetSwipe() {
+    gone = false;
+    dragging = false;
+    watching = false;
+    scrolling = false;
+    sheet.style.transform = "";
+    sheet.classList.remove("follow");
+    sheet.classList.remove("return");
+    sheet.classList.remove("leave");
+  }
+  window.addEventListener("pageshow", function () {
+    resetSwipe();
+  });
   function openRace(href, hasTabs, dir) {
     if (!href || gone) return;
     gone = true;
     var on = document.querySelector(".viewtabs button.on");
     var name = on ? (on.getAttribute("data-view") || "") : "";
     var hash = (hasTabs && (name === "pace" || name === "rhythm")) ? ("#" + name) : "";
-    try {
-      sessionStorage.setItem("dg-race-swipe", dir);
-      sessionStorage.setItem("dg-race-swipe-at", String(Date.now()));
-    } catch (e) {}
     window.location.href = href + hash;
   }
   function shift(dx) {
@@ -356,6 +333,12 @@ function armRaceSwipe() {
 }
 window.addEventListener("pageshow", function () {
   capText();
+  document.querySelectorAll(".pane").forEach(function (sheet) {
+    sheet.style.transform = "";
+    sheet.classList.remove("follow");
+    sheet.classList.remove("return");
+    sheet.classList.remove("leave");
+  });
   fitTitles();
   fitFilters();
   fitLines();
