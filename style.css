@@ -22,6 +22,7 @@ header.top { padding: 1.125rem 1.125rem 1rem; display: flex; align-items: center
 .raceno.flag span { color: #FFFFFF; -webkit-text-stroke: 0.09rem #17191C; paint-order: stroke fill; text-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.7); }
 .titleline h1 { flex: 1 1 auto; }
 h1 { margin: 0; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 2.75rem; line-height: 1; text-transform: uppercase; min-width: 0; white-space: nowrap; overflow: hidden; }
+.racehead h1.trackname { white-space: normal; line-height: 0.92; }
 .year { margin-left: auto; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 2.75rem; line-height: 1; color: #F5B400; flex: none; white-space: nowrap; }
 .back-season { display: block; margin: 0.75rem 0.875rem 0; background: #F5B400; color: #17191C; border-radius: 0.875rem; padding: 1rem 1.125rem; text-align: center; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 1.5rem; line-height: 1; }
 .season-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.75rem; align-items: center; padding: 0.875rem 0; border-bottom: 1px solid #343840; color: #EDEAE3; }
@@ -141,6 +142,10 @@ nav.tabs a.on { color: #F5B400; }
 .nextrace .when { display: block; font-size: min(1.125rem, 5.5vw); margin-top: 0.25rem; color: #D8D5CE; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nextrace .chev { color: #F5B400; font-size: 2rem; font-weight: 600; line-height: 1; }
 .layout { font-size: 1rem; color: #B0B3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cupline { font-size: 1.125rem; color: #D8D5CE; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.racestart { margin: 1rem 0.875rem 0; min-width: 0; }
+.racestart .kicker { display: block; font-size: 1rem; font-weight: 600; color: #F5B400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.racestart .whenline { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 2rem; line-height: 1.1; margin-top: 0.125rem; white-space: nowrap; overflow: hidden; }
 .startcard { margin: 1rem 0.875rem 0; background: #202328; border-radius: 12px; padding: 0.875rem 1rem; border-left: 4px solid #F5B400; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
 .startcard .text { min-width: 0; }
 .startcard .kicker { display: block; font-size: 1rem; font-weight: 600; color: #F5B400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -148,6 +153,9 @@ nav.tabs a.on { color: #F5B400; }
 .startcard .zone { font-size: 1rem; color: #B0B3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .startcard .evening { text-align: right; font-size: 1.0625rem; color: #D8D5CE; flex: none; white-space: nowrap; }
 h2.nexthead { margin: 1.5rem 0.875rem 0.5rem; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 1.375rem; letter-spacing: 0.02em; text-transform: uppercase; color: #F5B400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+h2.nexthead.whohead { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; overflow: visible; }
+h2.nexthead.whohead > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.classlogo { height: 40px; width: auto; max-width: 112px; object-fit: contain; flex: none; display: block; }
 .prose { margin: 0.25rem 0.875rem 0.5rem; color: #D8D5CE; }
 .kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; align-items: baseline; padding: 0.625rem 0; border-bottom: 1px solid #343840; }
 .kv:last-child { border-bottom: none; }
@@ -254,5 +262,5 @@ body.past .next { border-color: #4A4F57; }
 body.past .nextrace { border-color: #4A4F57; }
 body.past .nextrace .kickline, body.past .nextrace .kicker, body.past .nextrace .chev { color: #B0B3B8; }
 body.past .startcard { border-left-color: #4A4F57; }
-body.past .startcard .kicker { color: #B0B3B8; }
+body.past .startcard .kicker, body.past .racestart .kicker { color: #B0B3B8; }
 body.past header.top { border-bottom-color: #4A4F57; }

@@ -14,7 +14,7 @@
 <link rel="icon" href="../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;family=Roboto+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=35">
+<link rel="stylesheet" href="../style.css?v=36">
 <script>
 function capText() {
   var root = document.documentElement;
@@ -38,6 +38,16 @@ function applyLocalTimes() {
   document.querySelectorAll("[data-start]").forEach(function (el) {
     if (el.hasAttribute("data-countdown")) return;
     var when = new Date(el.getAttribute("data-start"));
+    if (el.hasAttribute("data-dateline")) {
+      var bits = new Intl.DateTimeFormat("en-GB", {
+        weekday: "short", day: "numeric", month: "short",
+        hour: "2-digit", minute: "2-digit", hour12: false, timeZone: zone
+      }).formatToParts(when);
+      var map = {};
+      bits.forEach(function (part) { map[part.type] = part.value; });
+      el.textContent = map.weekday + " " + map.day + " " + map.month + " · " + map.hour + ":" + map.minute;
+      return;
+    }
     var clock = new Intl.DateTimeFormat("en-GB", {
       hour: "2-digit", minute: "2-digit", hour12: false, timeZone: zone
     }).format(when);
@@ -81,7 +91,7 @@ function fitTitles() {
   document.querySelectorAll(".titleline").forEach(function (line) {
     var heading = line.querySelector("h1");
     var year = line.querySelector(".year");
-    if (!heading || heading.clientWidth < 1) return;
+    if (!heading || heading.classList.contains("trackname") || heading.clientWidth < 1) return;
     heading.style.fontSize = "";
     if (year) year.style.fontSize = "";
     var size = parseFloat(getComputedStyle(heading).fontSize);
@@ -93,8 +103,24 @@ function fitTitles() {
     }
   });
 }
+function fitTrackName() {
+  document.querySelectorAll("h1.trackname").forEach(function (heading) {
+    if (heading.clientWidth < 1) return;
+    heading.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(heading).fontSize);
+    while (size > 16) {
+      var line = parseFloat(getComputedStyle(heading).lineHeight) || size;
+      var tooTall = heading.scrollHeight / line > 2.35;
+      var tooWide = heading.scrollWidth > heading.clientWidth + 1;
+      if (!tooTall && !tooWide) break;
+      size = Math.max(16, size - 0.5);
+      heading.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
 function fitLines() {
-  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, h2.nexthead, .sub, .layout, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag, .view[data-view=rhythm] .stat .who, .stat .mom, .nextrace .kicker, .nextrace .big, .nextrace .when, .startcard .kicker, .startcard .zone, .kv .v, .carline span:last-child, .ahead").forEach(function (el) {
+  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, h2.nexthead, .sub, .cupline, .layout, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag, .view[data-view=rhythm] .stat .who, .stat .mom, .nextrace .kicker, .nextrace .big, .nextrace .when, .startcard .kicker, .startcard .zone, .racestart .kicker, .racestart .whenline, .kv .v, .carline span:last-child, .ahead").forEach(function (el) {
     if (el.clientWidth < 1) return;
     el.style.fontSize = "";
     var size = parseFloat(getComputedStyle(el).fontSize);
@@ -175,6 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
   applyLocalTimes();
   updateCountdowns();
   fitTitles();
+  fitTrackName();
   fitFilters();
   fitLines();
   fitMetal();
@@ -374,16 +401,25 @@ window.addEventListener("pageshow", function () {
   });
   updateCountdowns();
   fitTitles();
+  fitTrackName();
   fitFilters();
   fitLines();
   fitMetal();
 });
 window.addEventListener("resize", function () {
   fitTitles();
+  fitTrackName();
   fitFilters();
   fitLines();
   fitMetal();
 });
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(function () {
+    fitTitles();
+    fitTrackName();
+    fitLines();
+  });
+}
 </script>
 </head>
 <body data-page="calendar">
