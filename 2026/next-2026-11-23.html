@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17191C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="DriveGym">
+<title>Sebring race</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="icon" href="../icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;family=Roboto+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=39">
+<script>
+function capText() {
+  var root = document.documentElement;
+  var px = parseFloat(getComputedStyle(root).fontSize);
+  if (px > 20) root.style.fontSize = "20px";
+}
+capText();
+function zoneLabel(zone) {
+  if (!zone || zone === "Africa/Johannesburg") return "South Africa";
+  if (zone === "Europe/Madrid") return "Spain";
+  var parts = zone.split("/");
+  var city = parts[parts.length - 1].replace(/_/g, " ");
+  return city || "South Africa";
+}
+function applyLocalTimes() {
+  var zone = "";
+  try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { zone = ""; }
+  var line = document.getElementById("zoneline");
+  if (line) line.textContent = "Start time zone: " + zoneLabel(zone);
+  if (!zone) return;
+  document.querySelectorAll("[data-start]").forEach(function (el) {
+    if (el.hasAttribute("data-countdown")) return;
+    var when = new Date(el.getAttribute("data-start"));
+    if (el.hasAttribute("data-dateline")) {
+      var bits = new Intl.DateTimeFormat("en-GB", {
+        weekday: "short", day: "numeric", month: "short",
+        hour: "2-digit", minute: "2-digit", hour12: false, timeZone: zone
+      }).formatToParts(when);
+      var map = {};
+      bits.forEach(function (part) { map[part.type] = part.value; });
+      el.textContent = map.weekday + " " + map.day + " " + map.month + " · " + map.hour + ":" + map.minute;
+      return;
+    }
+    var clock = new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit", minute: "2-digit", hour12: false, timeZone: zone
+    }).format(when);
+    if (el.hasAttribute("data-weekday")) {
+      var day = new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: zone }).format(when);
+      el.textContent = day + " " + clock;
+      return;
+    }
+    var evening = el.getAttribute("data-evening") || "";
+    el.textContent = evening ? clock + " · " + evening : clock;
+  });
+}
+function countdownLine(startIso, eveningMin, now, kind) {
+  var start = new Date(startIso);
+  var page = kind === "page";
+  if (!startIso || isNaN(start.getTime())) return page ? "Countdown" : "Next race";
+  var end = start.getTime() + (Number(eveningMin) || 0) * 60000;
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var raceDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  var days = Math.round((raceDay.getTime() - today.getTime()) / 86400000);
+  if (now.getTime() >= end) return "Race done · results soon";
+  if (now.getTime() >= start.getTime()) return "Racing now";
+  if (page) {
+    if (days >= 2) return "Countdown: " + days + " days";
+    if (days === 1) return "Countdown: 1 day";
+    var left = start.getTime() - now.getTime();
+    if (left > 3600000) return "Countdown: " + Math.floor(left / 3600000) + " h";
+    var leftMin = Math.ceil(left / 60000);
+    if (leftMin < 1) leftMin = 1;
+    return "Countdown: " + leftMin + " min";
+  }
+  if (days >= 2) return "Next race · in " + days + " days";
+  if (days === 1) return "Next race · tomorrow";
+  var ms = start.getTime() - now.getTime();
+  if (ms > 3600000) return "Next race · today, in " + Math.floor(ms / 3600000) + " h";
+  var mins = Math.ceil(ms / 60000);
+  if (mins < 1) mins = 1;
+  return "Next race · in " + mins + " min";
+}
+function raceStillOn(startIso, eveningMin, resultsBuilt, now) {
+  var start = new Date(startIso);
+  if (!startIso || isNaN(start.getTime())) return false;
+  var end = start.getTime() + (Number(eveningMin) || 0) * 60000;
+  var limit = start.getTime() + 24 * 3600000;
+  if (now.getTime() < end) return true;
+  if (resultsBuilt) return false;
+  return now.getTime() < limit;
+}
+function applyNextSlots(now) {
+  var clock = now || new Date();
+  document.querySelectorAll(".nextslot").forEach(function (slot) {
+    var options = slot.querySelectorAll(".nextrace");
+    var shown = null;
+    options.forEach(function (el) {
+      var on = !shown && raceStillOn(
+        el.getAttribute("data-when"),
+        el.getAttribute("data-evening-min"),
+        el.getAttribute("data-results") === "1",
+        clock
+      );
+      if (on) shown = el;
+      if (on) el.removeAttribute("hidden");
+      else el.setAttribute("hidden", "");
+    });
+  });
+  var body = document.body;
+  if (!body || body.getAttribute("data-page") !== "next" || body.hasAttribute("data-pinned")) return;
+  var node = document.getElementById("race-pick");
+  if (!node) return;
+  var list = [];
+  try { list = JSON.parse(node.textContent || "[]"); } catch (e) { return; }
+  var picked = null;
+  list.forEach(function (race) {
+    if (picked) return;
+    if (raceStillOn(race.start, race.eveningMin, !!race.results, clock)) picked = race;
+  });
+  var here = body.getAttribute("data-race-date") || "";
+  if (picked && picked.date !== here && picked.href) location.replace(picked.href);
+  if (!picked && here) location.replace("season-over.html");
+}
+function updateCountdowns(now) {
+  var clock = now || new Date();
+  applyNextSlots(clock);
+  document.querySelectorAll("[data-countdown]").forEach(function (el) {
+    el.textContent = countdownLine(
+      el.getAttribute("data-when"),
+      el.getAttribute("data-evening-min"),
+      clock,
+      el.getAttribute("data-kind") || ""
+    );
+  });
+}
+setInterval(function () { updateCountdowns(); }, 60000);
+document.addEventListener("visibilitychange", function () {
+  if (document.visibilityState === "visible") updateCountdowns();
+});
+function fitTitles() {
+  document.querySelectorAll(".titleline").forEach(function (line) {
+    var heading = line.querySelector("h1");
+    var year = line.querySelector(".year");
+    if (!heading || heading.classList.contains("trackname") || heading.classList.contains("wraptitle") || heading.clientWidth < 1) return;
+    heading.style.fontSize = "";
+    if (year) year.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(heading).fontSize);
+    while (size > 16 && (heading.scrollWidth > heading.clientWidth || line.scrollWidth > line.clientWidth)) {
+      size = Math.max(16, size - 0.5);
+      heading.style.fontSize = size + "px";
+      if (year) year.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+function fitTrackName() {
+  document.querySelectorAll("h1.trackname").forEach(function (heading) {
+    if (heading.clientWidth < 1) return;
+    heading.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(heading).fontSize);
+    while (size > 16) {
+      var line = parseFloat(getComputedStyle(heading).lineHeight) || size;
+      var tooTall = heading.scrollHeight / line > 2.35;
+      var tooWide = heading.scrollWidth > heading.clientWidth + 1;
+      if (!tooTall && !tooWide) break;
+      size = Math.max(16, size - 0.5);
+      heading.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+function fitLines() {
+  document.querySelectorAll(".caption, .leadin, .series-row .meta, h2.series-name, h2.nexthead, .sub, .cupline, .layout, .where, .season-row .who, .place .driver, .rname, .rsub, .rplace.rtag, .view[data-view=rhythm] .stat .who, .stat .mom, .nextrace .kicker, .nextrace .big, .nextrace .when, .startcard .kicker, .startcard .zone, .racestart .kicker, .racestart .whenline, .kv .v, .carline span:last-child, .ahead").forEach(function (el) {
+    if (el.clientWidth < 1) return;
+    el.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    while (size > 16 && el.scrollWidth > el.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      el.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+function fitFilters() {
+  document.querySelectorAll(".filters button").forEach(function (el) {
+    el.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    while (size > 16 && el.scrollWidth > el.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      el.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+function fitMetal() {
+  document.querySelectorAll(".metaline").forEach(function (line) {
+    var crown = line.querySelector(".crownline");
+    if (!crown || line.clientWidth < 1) return;
+    crown.style.fontSize = "";
+    var size = parseFloat(getComputedStyle(crown).fontSize);
+    while (size > 16 && line.scrollWidth > line.clientWidth) {
+      size = Math.max(16, size - 0.5);
+      crown.style.fontSize = size + "px";
+      if (size === 16) break;
+    }
+  });
+}
+function pageStem() {
+  var counted = document.body && document.body.getAttribute("data-count-as");
+  if (counted) {
+    if (counted.length > 5 && counted.slice(-5).toLowerCase() === ".html")
+      counted = counted.slice(0, -5);
+    return counted || "/";
+  }
+  var path = location.pathname || "/";
+  if (path.length > 5 && path.slice(-5).toLowerCase() === ".html") path = path.slice(0, -5);
+  if (path.length > 1 && path.charAt(path.length - 1) === "/") path = path.slice(0, -1);
+  return path || "/";
+}
+function cupSlug(cup) {
+  var out = "";
+  var i;
+  for (i = 0; i < cup.length; i++) {
+    var code = cup.charCodeAt(i);
+    var alnum = (code >= 48 && code <= 57) || (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+    out += alnum ? cup.charAt(i).toLowerCase() : "-";
+  }
+  return out.replace(/^-+|-+$/g, "");
+}
+function countTab(path) {
+  try {
+    if (window.goatcounter && window.goatcounter.count) {
+      window.goatcounter.count({ path: path, title: document.title, event: false });
+    }
+  } catch (e) { /* never let counting affect the page */ }
+}
+function showView(name) {
+  document.querySelectorAll(".viewtabs button").forEach(function (btn) {
+    var on = btn.getAttribute("data-view") === name;
+    btn.classList.toggle("on", on);
+    btn.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  document.querySelectorAll(".view").forEach(function (panel) {
+    panel.classList.toggle("hidden", panel.getAttribute("data-view") !== name);
+  });
+  fitTitles();
+  fitLines();
+  fitMetal();
+}
+document.addEventListener("DOMContentLoaded", function () {
+  applyLocalTimes();
+  updateCountdowns();
+  fitTitles();
+  fitTrackName();
+  fitFilters();
+  fitLines();
+  fitMetal();
+  document.querySelectorAll(".viewtabs button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var name = btn.getAttribute("data-view");
+      var already = btn.classList.contains("on");
+      showView(name);
+      if (!already && name) countTab(pageStem() + "/" + name);
+    });
+  });
+  var asked = location.hash.replace("#", "");
+  if (asked === "pace" || asked === "rhythm") showView(asked);
+  armRaceSwipe();
+});
+function armRaceSwipe() {
+  if (!document.body || document.body.getAttribute("data-page") !== "race") return;
+  var older = document.body.getAttribute("data-older") || "";
+  var newer = document.body.getAttribute("data-newer") || "";
+  if (!older && !newer) return;
+  var olderTabs = document.body.getAttribute("data-older-tabs") === "1";
+  var newerTabs = document.body.getAttribute("data-newer-tabs") === "1";
+  var sheet = document.querySelector(".pane");
+  if (!sheet) return;
+  var startX = 0;
+  var startY = 0;
+  var startT = 0;
+  var watching = false;
+  var dragging = false;
+  var scrolling = false;
+  var gone = false;
+  function resetSwipe() {
+    gone = false;
+    dragging = false;
+    watching = false;
+    scrolling = false;
+    sheet.style.transform = "";
+    sheet.classList.remove("follow");
+    sheet.classList.remove("return");
+    sheet.classList.remove("leave");
+  }
+  window.addEventListener("pageshow", function () {
+    resetSwipe();
+  });
+  function openRace(href, hasTabs, dir) {
+    if (!href || gone) return;
+    gone = true;
+    var on = document.querySelector(".viewtabs button.on");
+    var name = on ? (on.getAttribute("data-view") || "") : "";
+    var hash = (hasTabs && (name === "pace" || name === "rhythm")) ? ("#" + name) : "";
+    window.location.href = href + hash;
+  }
+  function shift(dx) {
+    var width = window.innerWidth || 1;
+    var href = dx < 0 ? newer : older;
+    var x = dx;
+    if (!href) {
+      var cap = Math.min(48, width * 0.12);
+      x = dx < 0 ? Math.max(dx * 0.2, -cap) : Math.min(dx * 0.2, cap);
+    }
+    sheet.style.transform = "translateX(" + x + "px)";
+  }
+  function springBack() {
+    dragging = false;
+    sheet.classList.remove("follow");
+    sheet.classList.add("return");
+    void sheet.offsetWidth;
+    sheet.style.transform = "translateX(0px)";
+    var clear = function () {
+      sheet.style.transform = "";
+      sheet.classList.remove("return");
+      sheet.removeEventListener("transitionend", clear);
+    };
+    sheet.addEventListener("transitionend", clear);
+  }
+  function slideOff(dir) {
+    var href = dir === "newer" ? newer : older;
+    var hasTabs = dir === "newer" ? newerTabs : olderTabs;
+    if (!href) {
+      springBack();
+      return;
+    }
+    var width = window.innerWidth || 1;
+    sheet.classList.remove("follow");
+    sheet.classList.add("leave");
+    void sheet.offsetWidth;
+    sheet.style.transform = "translateX(" + (dir === "newer" ? -width : width) + "px)";
+    var left = false;
+    var go = function () {
+      if (left) return;
+      left = true;
+      openRace(href, hasTabs, dir);
+    };
+    var timer = setTimeout(go, 280);
+    sheet.addEventListener("transitionend", function () {
+      clearTimeout(timer);
+      go();
+    });
+  }
+  document.addEventListener("touchstart", function (event) {
+    if (gone) return;
+    if (event.touches.length !== 1) {
+      watching = false;
+      if (dragging) springBack();
+      dragging = false;
+      return;
+    }
+    var touch = event.touches[0];
+    var x = touch.clientX;
+    if (x < 30 || x > window.innerWidth - 30) {
+      watching = false;
+      return;
+    }
+    watching = true;
+    dragging = false;
+    scrolling = false;
+    startX = x;
+    startY = touch.clientY;
+    startT = event.timeStamp;
+  }, { passive: true });
+  document.addEventListener("touchmove", function (event) {
+    if (!watching || gone) return;
+    if (event.touches.length !== 1) {
+      watching = false;
+      if (dragging) springBack();
+      dragging = false;
+      return;
+    }
+    var touch = event.touches[0];
+    var dx = touch.clientX - startX;
+    var dy = touch.clientY - startY;
+    if (scrolling) return;
+    if (!dragging) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+        scrolling = true;
+        return;
+      }
+      if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
+      dragging = true;
+      sheet.classList.add("follow");
+      sheet.classList.remove("return");
+      sheet.classList.remove("leave");
+    }
+    if (event.cancelable) event.preventDefault();
+    shift(dx);
+  }, { passive: false });
+  document.addEventListener("touchend", function (event) {
+    if (!watching || gone) return;
+    watching = false;
+    var touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) {
+      if (dragging) springBack();
+      dragging = false;
+      return;
+    }
+    var dx = touch.clientX - startX;
+    var dy = touch.clientY - startY;
+    var dt = Math.max(event.timeStamp - startT, 1);
+    var sideways = Math.abs(dx) >= Math.abs(dy) * 2;
+    var flick = sideways && Math.abs(dx) >= 40 && (Math.abs(dx) / dt) >= 0.4;
+    var far = Math.abs(dx) >= window.innerWidth * 0.35;
+    var commit = sideways && (far || flick);
+    dragging = false;
+    if (!commit) {
+      if (sheet.style.transform) springBack();
+      return;
+    }
+    slideOff(dx < 0 ? "newer" : "older");
+  }, { passive: true });
+  document.addEventListener("touchcancel", function () {
+    watching = false;
+    if (dragging) springBack();
+    dragging = false;
+  }, { passive: true });
+  document.addEventListener("keydown", function (event) {
+    if (gone || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    var tag = event.target && event.target.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || (event.target && event.target.isContentEditable)) return;
+    if (event.key === "ArrowRight") {
+      if (!newer) return;
+      event.preventDefault();
+      openRace(newer, newerTabs, "newer");
+    } else if (event.key === "ArrowLeft") {
+      if (!older) return;
+      event.preventDefault();
+      openRace(older, olderTabs, "older");
+    }
+  });
+}
+window.addEventListener("pageshow", function () {
+  capText();
+  document.querySelectorAll(".pane").forEach(function (sheet) {
+    sheet.style.transform = "";
+    sheet.classList.remove("follow");
+    sheet.classList.remove("return");
+    sheet.classList.remove("leave");
+  });
+  updateCountdowns();
+  fitTitles();
+  fitTrackName();
+  fitFilters();
+  fitLines();
+  fitMetal();
+});
+window.addEventListener("resize", function () {
+  fitTitles();
+  fitTrackName();
+  fitFilters();
+  fitLines();
+  fitMetal();
+});
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(function () {
+    fitTitles();
+    fitTrackName();
+    fitLines();
+  });
+}
+</script>
+</head>
+<body data-page="next" data-count-as="/2026/next-2026-11-23" data-race-date="2026-11-23" data-pinned="1">
+<div class="page">
+<div class="pane">
+<div class="cjposter" style="background-image:url(../events/sebring-classic-12h.webp)"></div><div class="cjline"><span class="crownline"><svg class="crown" viewBox="0 0 22 18" role="img" aria-label="Crown Jewel support race"><path d="M2 14 L1 4 L6.5 8 L11 1.5 L15.5 8 L21 4 L20 14 Z" fill="none" stroke="currentColor" stroke-width="1.5"></path><rect x="2" y="15" width="18" height="2.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>Support race</span></div><section class="racehead nextpage"><div class="titleline"><span class="raceno flag" role="img" aria-label="Race 36, USA" style="background-image:url(../flags/us.webp)"><span aria-hidden="true">36</span></span><h1 class="trackname">Sebring</h1></div><span class="cupline">Stock USA · round 3 of 3</span></section><section class="racestart"><div class="starttext"><span class="kicker" data-countdown data-kind="page" data-when="2026-11-23T18:00:00Z" data-evening-min="85">Countdown</span><div class="whenline" data-start="2026-11-23T18:00:00Z" data-dateline>Mon 23 Nov · 19:00</div></div></section><h2 class="nexthead">The race</h2><section class="sheet"><div class="kv"><span class="k">Session</span><span class="v">1 h 30</span></div><div class="kv"><span class="k">Practice</span><span class="v">20 min</span></div><div class="kv"><span class="k">Qualifying</span><span class="v">10 min · alone on track</span></div><div class="kv"><span class="k">Race</span><span class="v">18 laps</span></div><div class="kv"><span class="k">Start</span><span class="v">Rolling</span></div><div class="kv"><span class="k">Pit stops</span><span class="v">1 stop-go, no service</span></div><div class="kv"><span class="k">In the game</span><span class="v">13:00</span></div><div class="kv"><span class="k">Damage</span><span class="v">Off</span></div><div class="kv"><span class="k">Track limits</span><span class="v">5 warnings</span></div></section><h2 class="nexthead">What's at stake</h2><p class="prose">1 race left, 21 points to win. Still in it: Len, Johan, Jaco, Willie. The grey number is the gap to the driver ahead.</p><section class="sheet"><div class="stake"><span class="pos">1</span><span class="who">Len</span><span class="ahead"></span><span class="pts">39</span></div><div class="stake"><span class="pos">2</span><span class="who">Johan</span><span class="ahead">−2</span><span class="pts">37</span></div><div class="stake"><span class="pos">3</span><span class="who">Jaco</span><span class="ahead">−9</span><span class="pts">28</span></div><div class="stake"><span class="pos">4</span><span class="who">Willie</span><span class="ahead">0</span><span class="pts">28</span></div><div class="stake"><span class="pos">5</span><span class="who">Jeremy</span><span class="ahead">−17</span><span class="pts">11</span></div></section><h2 class="nexthead whohead"><span>Who drives what</span><img class="classlogo" src="../classes/Stock_USA_Gen3.webp" alt="Stock USA Gen3"></h2><p class="prose">One car for everyone.</p><section class="sheet"><div class="carline"><span>Everyone</span><span>Stock USA Gen3</span></div></section><h2 class="nexthead">Stock USA: brakes before power</h2><p class="prose">Heavy and powerful, with grip from mechanical load, not downforce. Brake early and commit, carry momentum, feed the throttle on exit. Aggressive inputs are punished fast.</p><h2 class="nexthead">Sebring: the stop-go</h2><ol class="steps"><li>Abrasive concrete and bumps: be precise and consistent.</li><li>Do the stop-go: miss it and you get an automatic penalty.</li><li>Clean pit entry, correct speed, tidy rejoin.</li></ol>
+</div>
+<nav class="tabs"><a class="" data-tab="race" href="index.html">Results</a><a class="" data-tab="standings" href="standings.html">Standings</a><a class="" data-tab="calendar" href="calendar.html">Calendar</a></nav>
+</div>
+
+
+<script>
+(function () {
+  try {
+    var hash = location.hash || "";
+    var stem = pageStem();
+    var path = "";
+    var kind = document.body.getAttribute("data-page");
+    var countAs = document.body.getAttribute("data-count-as");
+    if (countAs) path = countAs;
+    if (kind === "race") {
+      var asked = hash.replace("#", "");
+      if ((asked === "pace" || asked === "rhythm") && document.querySelector(".view[data-view='" + asked + "']"))
+        path = stem + "/" + asked;
+    } else if (kind === "standings") {
+      if (hash === "#series") path = stem + "/series";
+      else if (hash === "#best") path = stem + "/best-drive";
+      else if (hash.indexOf("#series-") === 0)
+        path = stem + "/series/" + cupSlug(decodeURIComponent(hash.slice(8)));
+    }
+    if (path) {
+      window.goatcounter = window.goatcounter || {};
+      window.goatcounter.path = path;
+    }
+  } catch (e) {}
+})();
+</script>
+<script data-goatcounter="https://drivegym.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
+</body>
+</html>

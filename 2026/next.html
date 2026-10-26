@@ -8,13 +8,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="DriveGym">
-<title>Nordschleife next race</title>
+<title>Interlagos GP race</title>
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="icon" href="../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;family=Roboto+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=36">
+<link rel="stylesheet" href="../style.css?v=39">
 <script>
 function capText() {
   var root = document.documentElement;
@@ -60,15 +60,25 @@ function applyLocalTimes() {
     el.textContent = evening ? clock + " · " + evening : clock;
   });
 }
-function countdownLine(startIso, eveningMin, now) {
+function countdownLine(startIso, eveningMin, now, kind) {
   var start = new Date(startIso);
-  if (!startIso || isNaN(start.getTime())) return "Next race";
+  var page = kind === "page";
+  if (!startIso || isNaN(start.getTime())) return page ? "Countdown" : "Next race";
   var end = start.getTime() + (Number(eveningMin) || 0) * 60000;
   var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   var raceDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
   var days = Math.round((raceDay.getTime() - today.getTime()) / 86400000);
   if (now.getTime() >= end) return "Race done · results soon";
   if (now.getTime() >= start.getTime()) return "Racing now";
+  if (page) {
+    if (days >= 2) return "Countdown: " + days + " days";
+    if (days === 1) return "Countdown: 1 day";
+    var left = start.getTime() - now.getTime();
+    if (left > 3600000) return "Countdown: " + Math.floor(left / 3600000) + " h";
+    var leftMin = Math.ceil(left / 60000);
+    if (leftMin < 1) leftMin = 1;
+    return "Countdown: " + leftMin + " min";
+  }
   if (days >= 2) return "Next race · in " + days + " days";
   if (days === 1) return "Next race · tomorrow";
   var ms = start.getTime() - now.getTime();
@@ -77,10 +87,57 @@ function countdownLine(startIso, eveningMin, now) {
   if (mins < 1) mins = 1;
   return "Next race · in " + mins + " min";
 }
+function raceStillOn(startIso, eveningMin, resultsBuilt, now) {
+  var start = new Date(startIso);
+  if (!startIso || isNaN(start.getTime())) return false;
+  var end = start.getTime() + (Number(eveningMin) || 0) * 60000;
+  var limit = start.getTime() + 24 * 3600000;
+  if (now.getTime() < end) return true;
+  if (resultsBuilt) return false;
+  return now.getTime() < limit;
+}
+function applyNextSlots(now) {
+  var clock = now || new Date();
+  document.querySelectorAll(".nextslot").forEach(function (slot) {
+    var options = slot.querySelectorAll(".nextrace");
+    var shown = null;
+    options.forEach(function (el) {
+      var on = !shown && raceStillOn(
+        el.getAttribute("data-when"),
+        el.getAttribute("data-evening-min"),
+        el.getAttribute("data-results") === "1",
+        clock
+      );
+      if (on) shown = el;
+      if (on) el.removeAttribute("hidden");
+      else el.setAttribute("hidden", "");
+    });
+  });
+  var body = document.body;
+  if (!body || body.getAttribute("data-page") !== "next" || body.hasAttribute("data-pinned")) return;
+  var node = document.getElementById("race-pick");
+  if (!node) return;
+  var list = [];
+  try { list = JSON.parse(node.textContent || "[]"); } catch (e) { return; }
+  var picked = null;
+  list.forEach(function (race) {
+    if (picked) return;
+    if (raceStillOn(race.start, race.eveningMin, !!race.results, clock)) picked = race;
+  });
+  var here = body.getAttribute("data-race-date") || "";
+  if (picked && picked.date !== here && picked.href) location.replace(picked.href);
+  if (!picked && here) location.replace("season-over.html");
+}
 function updateCountdowns(now) {
   var clock = now || new Date();
+  applyNextSlots(clock);
   document.querySelectorAll("[data-countdown]").forEach(function (el) {
-    el.textContent = countdownLine(el.getAttribute("data-when"), el.getAttribute("data-evening-min"), clock);
+    el.textContent = countdownLine(
+      el.getAttribute("data-when"),
+      el.getAttribute("data-evening-min"),
+      clock,
+      el.getAttribute("data-kind") || ""
+    );
   });
 }
 setInterval(function () { updateCountdowns(); }, 60000);
@@ -91,7 +148,7 @@ function fitTitles() {
   document.querySelectorAll(".titleline").forEach(function (line) {
     var heading = line.querySelector("h1");
     var year = line.querySelector(".year");
-    if (!heading || heading.classList.contains("trackname") || heading.clientWidth < 1) return;
+    if (!heading || heading.classList.contains("trackname") || heading.classList.contains("wraptitle") || heading.clientWidth < 1) return;
     heading.style.fontSize = "";
     if (year) year.style.fontSize = "";
     var size = parseFloat(getComputedStyle(heading).fontSize);
@@ -422,10 +479,10 @@ if (document.fonts && document.fonts.ready) {
 }
 </script>
 </head>
-<body data-page="next" data-count-as="/2026/next">
+<body data-page="next" data-count-as="/2026/next" data-race-date="2026-11-02">
 <div class="page">
 <div class="pane">
-<section class="racehead"><div class="titleline"><span class="raceno flag" role="img" aria-label="Race 32, Germany" style="background-image:url(../flags/de.webp)"><span aria-hidden="true">32</span></span><h1 class="trackname">Nordschleife 24 Hour 2025</h1></div><span class="cupline">GT4 · round 3 of 4</span></section><section class="racestart"><span class="kicker" data-countdown data-when="2026-10-26T18:00:00Z" data-evening-min="75">Next race</span><div class="whenline" data-start="2026-10-26T18:00:00Z" data-dateline>Mon 26 Oct · 19:00</div></section><h2 class="nexthead">The race</h2><section class="sheet"><div class="kv"><span class="k">Session</span><span class="v">1 h 15</span></div><div class="kv"><span class="k">Qualifying</span><span class="v">1 flying lap</span></div><div class="kv"><span class="k">Race</span><span class="v">4 laps · standing start</span></div><div class="kv"><span class="k">Pit stops</span><span class="v">None</span></div><div class="kv"><span class="k">In the game</span><span class="v">13:00 · clear</span></div><div class="kv"><span class="k">Damage</span><span class="v">Off</span></div><div class="kv"><span class="k">Track limits</span><span class="v">5 warnings</span></div></section><h2 class="nexthead">What's at stake</h2><p class="prose">2 races left, 42 points to win. Everyone can still take the GT4 cup. The grey number is the gap to the driver ahead.</p><section class="sheet"><div class="stake"><span class="pos">1</span><span class="who">Len</span><span class="ahead"></span><span class="pts">41</span></div><div class="stake"><span class="pos">2</span><span class="who">Johan</span><span class="ahead">−6</span><span class="pts">35</span></div><div class="stake"><span class="pos">3</span><span class="who">Jaco</span><span class="ahead">−5</span><span class="pts">30</span></div><div class="stake"><span class="pos">4</span><span class="who">Louis</span><span class="ahead">−7</span><span class="pts">23</span></div><div class="stake"><span class="pos">5</span><span class="who">Jeremy</span><span class="ahead">−2</span><span class="pts">21</span></div></section><h2 class="nexthead whohead"><span>Who drives what</span><img class="classlogo" src="../classes/GT4.webp" alt="GT4"></h2><p class="prose">Each driver has one GT4 for the season. 100kg = ballast carried, to even out the field.</p><section class="sheet"><div class="carline"><span>Len</span><span>Porsche · 100kg</span></div><div class="carline"><span>Johan</span><span>McLaren · 100kg</span></div><div class="carline"><span>Jaco</span><span>Mercedes-AMG</span></div><div class="carline"><span>Louis</span><span>BMW</span></div><div class="carline"><span>Jeremy</span><span>Chevrolet</span></div><div class="carline"><span>Willie</span><span>Alpine</span></div><div class="carline"><span>Adriaan</span><span>Aston Martin</span></div><div class="carline"><span>Ramon</span><span>Audi</span></div><div class="carline"><span>Robbie</span><span>Ginetta</span></div></section><h2 class="nexthead">GT4: momentum over power</h2><p class="prose">Heavier than a GT3, with less downforce: grip comes from the tyres, not the wings. Brake straight, be smooth on the throttle and carry your speed. Mistakes cost time at once.</p><h2 class="nexthead">Nordschleife: how we race here</h2><ol class="steps"><li>Plan a pass well ahead. If it is not clearly on, back off and wait.</li><li>Faster car: pass safely and patiently. Slower car: stay predictable, no sudden line changes.</li><li>Mistakes here bite later. Finishing matters more than the position.</li></ol>
+<section class="racehead nextpage"><div class="titleline"><span class="raceno flag" role="img" aria-label="Race 33, Brazil" style="background-image:url(../flags/br.webp)"><span aria-hidden="true">33</span></span><h1 class="trackname">Interlagos GP</h1></div><span class="cupline">StockCar 2024 · round 2 of 2</span></section><section class="racestart"><div class="starttext"><span class="kicker" data-countdown data-kind="page" data-when="2026-11-02T18:00:00Z" data-evening-min="75">Countdown</span><div class="whenline" data-start="2026-11-02T18:00:00Z" data-dateline>Mon 2 Nov · 19:00</div></div></section><h2 class="nexthead">The race</h2><section class="sheet"><div class="kv"><span class="k">Session</span><span class="v">1 h 15</span></div><div class="kv"><span class="k">Practice</span><span class="v">15 min</span></div><div class="kv"><span class="k">Qualifying</span><span class="v">15 min</span></div><div class="kv"><span class="k">Race</span><span class="v">18 laps</span></div><div class="kv"><span class="k">Start</span><span class="v">Standing</span></div><div class="kv"><span class="k">Pit stops</span><span class="v">None</span></div><div class="kv"><span class="k">In the game</span><span class="v">13:00</span></div><div class="kv"><span class="k">Damage</span><span class="v">Off</span></div><div class="kv"><span class="k">Track limits</span><span class="v">5 warnings</span></div></section><h2 class="nexthead">What's at stake</h2><p class="prose">1 race left, 21 points to win. Everyone can still take the StockCar 2024 cup. The grey number is the gap to the driver ahead.</p><section class="sheet"><div class="stake"><span class="pos">1</span><span class="who">Len</span><span class="ahead"></span><span class="pts">21</span></div><div class="stake"><span class="pos">2</span><span class="who">Christo</span><span class="ahead">−4</span><span class="pts">17</span></div><div class="stake"><span class="pos">3</span><span class="who">Jaco</span><span class="ahead">−2</span><span class="pts">15</span></div><div class="stake"><span class="pos">4</span><span class="who">Johan</span><span class="ahead">−2</span><span class="pts">13</span></div><div class="stake"><span class="pos">5</span><span class="who">Adriaan</span><span class="ahead">−1</span><span class="pts">12</span></div></section><h2 class="nexthead whohead"><span>Who drives what</span><img class="classlogo" src="../classes/StockCarV8_2024.webp" alt="Stockcar 2024"></h2><p class="prose">No allocated car: choose either model.</p><section class="sheet"><div class="carline"><span>Chevrolet</span><span>Cruze Stock Car 2024</span></div><div class="carline"><span>Toyota</span><span>Corolla Stock Car 2024</span></div></section><h2 class="nexthead">Stock Car: balance beats brutality</h2><p class="prose">A powerful V8 with lots of mass and strong brakes. Brake firm but measured, turn in deliberately and feed the throttle in, or the rear tyres give up. Stable at speed, but unforgiving when rushed.</p><h2 class="nexthead">Interlagos: how we race here</h2><ol class="steps"><li>Heavy braking zones and long loaded corners: be patient in traffic.</li><li>Control matters more than momentum: a clean exit beats a late lunge.</li><li>Final round of the cup: finish the race.</li></ol><script type="application/json" id="race-pick">[{"date": "2026-11-02", "start": "2026-11-02T18:00:00Z", "eveningMin": 75, "results": false, "href": "next-2026-11-02.html"}, {"date": "2026-11-09", "start": "2026-11-09T18:00:00Z", "eveningMin": 75, "results": false, "href": "next-2026-11-09.html"}, {"date": "2026-11-16", "start": "2026-11-16T18:00:00Z", "eveningMin": 75, "results": false, "href": "next-2026-11-16.html"}, {"date": "2026-11-23", "start": "2026-11-23T18:00:00Z", "eveningMin": 85, "results": false, "href": "next-2026-11-23.html"}, {"date": "2026-11-30", "start": "2026-11-30T17:30:00Z", "eveningMin": 145, "results": false, "href": "next-2026-11-30.html"}]</script>
 </div>
 <nav class="tabs"><a class="" data-tab="race" href="index.html">Results</a><a class="" data-tab="standings" href="standings.html">Standings</a><a class="" data-tab="calendar" href="calendar.html">Calendar</a></nav>
 </div>

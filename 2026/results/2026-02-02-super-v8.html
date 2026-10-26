@@ -14,7 +14,7 @@
 <link rel="icon" href="../../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;family=Roboto+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../style.css?v=36">
+<link rel="stylesheet" href="../../style.css?v=39">
 <link rel="prefetch" href="2026-01-26-sprintrace.html">
 <link rel="prefetch" href="2026-02-09-gt3-gen2.html">
 <script>
@@ -62,15 +62,25 @@ function applyLocalTimes() {
     el.textContent = evening ? clock + " · " + evening : clock;
   });
 }
-function countdownLine(startIso, eveningMin, now) {
+function countdownLine(startIso, eveningMin, now, kind) {
   var start = new Date(startIso);
-  if (!startIso || isNaN(start.getTime())) return "Next race";
+  var page = kind === "page";
+  if (!startIso || isNaN(start.getTime())) return page ? "Countdown" : "Next race";
   var end = start.getTime() + (Number(eveningMin) || 0) * 60000;
   var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   var raceDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
   var days = Math.round((raceDay.getTime() - today.getTime()) / 86400000);
   if (now.getTime() >= end) return "Race done · results soon";
   if (now.getTime() >= start.getTime()) return "Racing now";
+  if (page) {
+    if (days >= 2) return "Countdown: " + days + " days";
+    if (days === 1) return "Countdown: 1 day";
+    var left = start.getTime() - now.getTime();
+    if (left > 3600000) return "Countdown: " + Math.floor(left / 3600000) + " h";
+    var leftMin = Math.ceil(left / 60000);
+    if (leftMin < 1) leftMin = 1;
+    return "Countdown: " + leftMin + " min";
+  }
   if (days >= 2) return "Next race · in " + days + " days";
   if (days === 1) return "Next race · tomorrow";
   var ms = start.getTime() - now.getTime();
@@ -79,10 +89,57 @@ function countdownLine(startIso, eveningMin, now) {
   if (mins < 1) mins = 1;
   return "Next race · in " + mins + " min";
 }
+function raceStillOn(startIso, eveningMin, resultsBuilt, now) {
+  var start = new Date(startIso);
+  if (!startIso || isNaN(start.getTime())) return false;
+  var end = start.getTime() + (Number(eveningMin) || 0) * 60000;
+  var limit = start.getTime() + 24 * 3600000;
+  if (now.getTime() < end) return true;
+  if (resultsBuilt) return false;
+  return now.getTime() < limit;
+}
+function applyNextSlots(now) {
+  var clock = now || new Date();
+  document.querySelectorAll(".nextslot").forEach(function (slot) {
+    var options = slot.querySelectorAll(".nextrace");
+    var shown = null;
+    options.forEach(function (el) {
+      var on = !shown && raceStillOn(
+        el.getAttribute("data-when"),
+        el.getAttribute("data-evening-min"),
+        el.getAttribute("data-results") === "1",
+        clock
+      );
+      if (on) shown = el;
+      if (on) el.removeAttribute("hidden");
+      else el.setAttribute("hidden", "");
+    });
+  });
+  var body = document.body;
+  if (!body || body.getAttribute("data-page") !== "next" || body.hasAttribute("data-pinned")) return;
+  var node = document.getElementById("race-pick");
+  if (!node) return;
+  var list = [];
+  try { list = JSON.parse(node.textContent || "[]"); } catch (e) { return; }
+  var picked = null;
+  list.forEach(function (race) {
+    if (picked) return;
+    if (raceStillOn(race.start, race.eveningMin, !!race.results, clock)) picked = race;
+  });
+  var here = body.getAttribute("data-race-date") || "";
+  if (picked && picked.date !== here && picked.href) location.replace(picked.href);
+  if (!picked && here) location.replace("season-over.html");
+}
 function updateCountdowns(now) {
   var clock = now || new Date();
+  applyNextSlots(clock);
   document.querySelectorAll("[data-countdown]").forEach(function (el) {
-    el.textContent = countdownLine(el.getAttribute("data-when"), el.getAttribute("data-evening-min"), clock);
+    el.textContent = countdownLine(
+      el.getAttribute("data-when"),
+      el.getAttribute("data-evening-min"),
+      clock,
+      el.getAttribute("data-kind") || ""
+    );
   });
 }
 setInterval(function () { updateCountdowns(); }, 60000);
@@ -93,7 +150,7 @@ function fitTitles() {
   document.querySelectorAll(".titleline").forEach(function (line) {
     var heading = line.querySelector("h1");
     var year = line.querySelector(".year");
-    if (!heading || heading.classList.contains("trackname") || heading.clientWidth < 1) return;
+    if (!heading || heading.classList.contains("trackname") || heading.classList.contains("wraptitle") || heading.clientWidth < 1) return;
     heading.style.fontSize = "";
     if (year) year.style.fontSize = "";
     var size = parseFloat(getComputedStyle(heading).fontSize);
@@ -427,7 +484,7 @@ if (document.fonts && document.fonts.ready) {
 <body data-page="race" data-older="2026-01-26-sprintrace.html" data-newer="2026-02-09-gt3-gen2.html">
 <div class="page">
 <div class="pane">
-<section class="racehead"><div class="titleline"><span class="raceno flag" role="img" aria-label="Race 4, Australia" style="background-image:url(../../flags/au.webp)"><span aria-hidden="true">4</span></span><h1>Bathurst 12H</h1></div><span class="sub">2 Feb 2026 · Super V8</span><div class="metaline"><span class="crownline"><svg class="crown" viewBox="0 0 22 18" role="img" aria-label="Crown Jewel support race"><path d="M2 14 L1 4 L6.5 8 L11 1.5 L15.5 8 L21 4 L20 14 Z" fill="none" stroke="currentColor" stroke-width="1.5"></path><rect x="2" y="15" width="18" height="2.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>Support race</span></div></section><section class="results"><div class="rrows"><div class="rrow pod gold"><span class="rmetal"><span class="rnum">1</span></span><span class="rphoto"><img src="../../photos/johan.jpg" alt=""></span><span class="rwho"><span class="rname">Johan</span></span><span class="rpts"><span class="rscore">21</span></span></div><div class="rrow pod silver"><span class="rmetal"><span class="rnum">2</span></span><span class="rphoto"><img src="../../photos/len.jpg" alt=""></span><span class="rwho"><span class="rname">Len</span></span><span class="rpts"><span class="rscore">17</span></span></div><div class="rrow pod bronze"><span class="rmetal"><span class="rnum">3</span></span><span class="rphoto"><img src="../../photos/willie.jpg" alt=""></span><span class="rwho"><span class="rname">Willie</span></span><span class="rpts"><span class="rscore">15</span></span></div><div class="rrow"><span class="rplace">6</span><span class="rphoto"><img src="../../photos/adriaan.jpg" alt=""></span><span class="rwho"><span class="rname">Adriaan</span></span><span class="rpts"><span class="rscore">10</span></span></div><div class="rrow"><span class="rplace">16</span><span class="rphoto"><span class="rtile" aria-hidden="true">W</span></span><span class="rwho"><span class="rname">Wayde</span></span><span class="rpts"><span class="rscore">0</span></span></div><div class="rrow"><span class="rplace">22</span><span class="rphoto"><img src="../../photos/jaco.jpg" alt=""></span><span class="rwho"><span class="rname">Jaco</span></span><span class="rpts"><span class="rscore">0</span></span></div><div class="rrow"><span class="rplace">23</span><span class="rphoto"><img src="../../photos/louis.jpg" alt=""></span><span class="rwho"><span class="rname">Louis</span></span><span class="rpts"><span class="rscore">0</span></span></div><div class="rrow"><span class="rplace">26</span><span class="rphoto"><img src="../../photos/jeremy.jpg" alt=""></span><span class="rwho"><span class="rname">Jeremy</span></span><span class="rpts"><span class="rscore">0</span></span></div><div class="rrow"><span class="rplace rtag">DNF</span><span class="rphoto"><span class="rtile" aria-hidden="true">R</span></span><span class="rwho"><span class="rname">Robbie</span></span><span class="rpts"><span class="rscore">0</span></span></div></div></section><a class="nextrace" href="../next.html"><span class="raceno flag" role="img" aria-label="Race 32, Germany" style="background-image:url(../../flags/de.webp)"><span aria-hidden="true">32</span></span><span class="cardtext"><span class="kickline"><span class="kicker" data-countdown data-when="2026-10-26T18:00:00Z" data-evening-min="75">Next race</span></span><span class="big">Nordschleife</span><span class="when">26 Oct · <span data-start="2026-10-26T18:00:00Z">19:00</span> · GT4</span></span><span class="chev" aria-hidden="true">›</span></a>
+<section class="racehead"><div class="titleline"><span class="raceno flag" role="img" aria-label="Race 4, Australia" style="background-image:url(../../flags/au.webp)"><span aria-hidden="true">4</span></span><h1>Bathurst 12H</h1></div><span class="sub">2 Feb 2026 · Super V8</span><div class="metaline"><span class="crownline"><svg class="crown" viewBox="0 0 22 18" role="img" aria-label="Crown Jewel support race"><path d="M2 14 L1 4 L6.5 8 L11 1.5 L15.5 8 L21 4 L20 14 Z" fill="none" stroke="currentColor" stroke-width="1.5"></path><rect x="2" y="15" width="18" height="2.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>Support race</span></div></section><section class="results"><div class="rrows"><div class="rrow pod gold"><span class="rmetal"><span class="rnum">1</span></span><span class="rphoto"><img src="../../photos/johan.jpg" alt=""></span><span class="rwho"><span class="rname">Johan</span></span><span class="rpts"><span class="rscore">21</span></span></div><div class="rrow pod silver"><span class="rmetal"><span class="rnum">2</span></span><span class="rphoto"><img src="../../photos/len.jpg" alt=""></span><span class="rwho"><span class="rname">Len</span></span><span class="rpts"><span class="rscore">17</span></span></div><div class="rrow pod bronze"><span class="rmetal"><span class="rnum">3</span></span><span class="rphoto"><img src="../../photos/willie.jpg" alt=""></span><span class="rwho"><span class="rname">Willie</span></span><span class="rpts"><span class="rscore">15</span></span></div><div class="rrow"><span class="rplace">6</span><span class="rphoto"><img src="../../photos/adriaan.jpg" alt=""></span><span class="rwho"><span class="rname">Adriaan</span></span><span class="rpts"><span class="rscore">10</span></span></div><div class="rrow"><span class="rplace">16</span><span class="rphoto"><span class="rtile" aria-hidden="true">W</span></span><span class="rwho"><span class="rname">Wayde</span></span><span class="rpts"><span class="rscore">0</span></span></div><div class="rrow"><span class="rplace">22</span><span class="rphoto"><img src="../../photos/jaco.jpg" alt=""></span><span class="rwho"><span class="rname">Jaco</span></span><span class="rpts"><span class="rscore">0</span></span></div><div class="rrow"><span class="rplace">23</span><span class="rphoto"><img src="../../photos/louis.jpg" alt=""></span><span class="rwho"><span class="rname">Louis</span></span><span class="rpts"><span class="rscore">0</span></span></div><div class="rrow"><span class="rplace">26</span><span class="rphoto"><img src="../../photos/jeremy.jpg" alt=""></span><span class="rwho"><span class="rname">Jeremy</span></span><span class="rpts"><span class="rscore">0</span></span></div><div class="rrow"><span class="rplace rtag">DNF</span><span class="rphoto"><span class="rtile" aria-hidden="true">R</span></span><span class="rwho"><span class="rname">Robbie</span></span><span class="rpts"><span class="rscore">0</span></span></div></div></section><div class="nextslot"><a class="nextrace" href="../next-2026-11-02.html" data-when="2026-11-02T18:00:00Z" data-evening-min="75" data-results="0"><span class="raceno flag" role="img" aria-label="Race 33, Brazil" style="background-image:url(../../flags/br.webp)"><span aria-hidden="true">33</span></span><span class="cardtext"><span class="kickline"><span class="kicker" data-countdown data-when="2026-11-02T18:00:00Z" data-evening-min="75">Next race</span></span><span class="big">Interlagos GP</span><span class="when">2 Nov · <span class="timelocal" data-start="2026-11-02T18:00:00Z">19:00</span> · StockCar 2024</span></span><span class="chev" aria-hidden="true">›</span></a><a class="nextrace" hidden href="../next-2026-11-09.html" data-when="2026-11-09T18:00:00Z" data-evening-min="75" data-results="0"><span class="raceno flag" role="img" aria-label="Race 34, Brazil" style="background-image:url(../../flags/br.webp)"><span aria-hidden="true">34</span></span><span class="cardtext"><span class="kickline"><span class="kicker" data-countdown data-when="2026-11-09T18:00:00Z" data-evening-min="75">Next race</span></span><span class="big">Interlagos GP</span><span class="when">9 Nov · <span class="timelocal" data-start="2026-11-09T18:00:00Z">19:00</span> · Historic F1</span></span><span class="chev" aria-hidden="true">›</span></a><a class="nextrace" hidden href="../next-2026-11-16.html" data-when="2026-11-16T18:00:00Z" data-evening-min="75" data-results="0"><span class="raceno flag" role="img" aria-label="Race 35, South Africa" style="background-image:url(../../flags/za.webp)"><span aria-hidden="true">35</span></span><span class="cardtext"><span class="kickline"><span class="kicker" data-countdown data-when="2026-11-16T18:00:00Z" data-evening-min="75">Next race</span></span><span class="big">Kyalami</span><span class="when">16 Nov · <span class="timelocal" data-start="2026-11-16T18:00:00Z">19:00</span> · GT4</span></span><span class="chev" aria-hidden="true">›</span></a><a class="nextrace" hidden href="../next-2026-11-23.html" data-when="2026-11-23T18:00:00Z" data-evening-min="85" data-results="0"><span class="raceno flag" role="img" aria-label="Race 36, USA" style="background-image:url(../../flags/us.webp)"><span aria-hidden="true">36</span></span><span class="cardtext"><span class="kickline"><span class="kicker" data-countdown data-when="2026-11-23T18:00:00Z" data-evening-min="85">Next race</span></span><span class="big">Sebring</span><span class="when">23 Nov · <span class="timelocal" data-start="2026-11-23T18:00:00Z">19:00</span> · Stock USA</span></span><span class="chev" aria-hidden="true">›</span></a><a class="nextrace" hidden href="../next-2026-11-30.html" data-when="2026-11-30T17:30:00Z" data-evening-min="145" data-results="0"><span class="raceno flag" role="img" aria-label="Race 37, USA" style="background-image:url(../../flags/us.webp)"><span aria-hidden="true">37</span></span><span class="cardtext"><span class="kickline"><span class="kicker" data-countdown data-when="2026-11-30T17:30:00Z" data-evening-min="145">Next race</span></span><span class="big">Sebring</span><span class="when">30 Nov · <span class="timelocal early" data-start="2026-11-30T17:30:00Z">18:30</span> · GT1</span><span class="earlynote">Starts 30 min earlier than usual</span></span><span class="chev" aria-hidden="true">›</span></a></div>
 </div>
 <nav class="tabs"><a class="on" data-tab="race" href="../index.html">Results</a><a class="" data-tab="standings" href="../standings.html">Standings</a><a class="" data-tab="calendar" href="../calendar.html">Calendar</a></nav>
 </div>

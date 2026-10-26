@@ -14,7 +14,7 @@
 <link rel="icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;family=Roboto+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=36">
+<link rel="stylesheet" href="style.css?v=39">
 <script>
 function capText() {
   var root = document.documentElement;
@@ -60,15 +60,25 @@ function applyLocalTimes() {
     el.textContent = evening ? clock + " · " + evening : clock;
   });
 }
-function countdownLine(startIso, eveningMin, now) {
+function countdownLine(startIso, eveningMin, now, kind) {
   var start = new Date(startIso);
-  if (!startIso || isNaN(start.getTime())) return "Next race";
+  var page = kind === "page";
+  if (!startIso || isNaN(start.getTime())) return page ? "Countdown" : "Next race";
   var end = start.getTime() + (Number(eveningMin) || 0) * 60000;
   var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   var raceDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
   var days = Math.round((raceDay.getTime() - today.getTime()) / 86400000);
   if (now.getTime() >= end) return "Race done · results soon";
   if (now.getTime() >= start.getTime()) return "Racing now";
+  if (page) {
+    if (days >= 2) return "Countdown: " + days + " days";
+    if (days === 1) return "Countdown: 1 day";
+    var left = start.getTime() - now.getTime();
+    if (left > 3600000) return "Countdown: " + Math.floor(left / 3600000) + " h";
+    var leftMin = Math.ceil(left / 60000);
+    if (leftMin < 1) leftMin = 1;
+    return "Countdown: " + leftMin + " min";
+  }
   if (days >= 2) return "Next race · in " + days + " days";
   if (days === 1) return "Next race · tomorrow";
   var ms = start.getTime() - now.getTime();
@@ -77,10 +87,57 @@ function countdownLine(startIso, eveningMin, now) {
   if (mins < 1) mins = 1;
   return "Next race · in " + mins + " min";
 }
+function raceStillOn(startIso, eveningMin, resultsBuilt, now) {
+  var start = new Date(startIso);
+  if (!startIso || isNaN(start.getTime())) return false;
+  var end = start.getTime() + (Number(eveningMin) || 0) * 60000;
+  var limit = start.getTime() + 24 * 3600000;
+  if (now.getTime() < end) return true;
+  if (resultsBuilt) return false;
+  return now.getTime() < limit;
+}
+function applyNextSlots(now) {
+  var clock = now || new Date();
+  document.querySelectorAll(".nextslot").forEach(function (slot) {
+    var options = slot.querySelectorAll(".nextrace");
+    var shown = null;
+    options.forEach(function (el) {
+      var on = !shown && raceStillOn(
+        el.getAttribute("data-when"),
+        el.getAttribute("data-evening-min"),
+        el.getAttribute("data-results") === "1",
+        clock
+      );
+      if (on) shown = el;
+      if (on) el.removeAttribute("hidden");
+      else el.setAttribute("hidden", "");
+    });
+  });
+  var body = document.body;
+  if (!body || body.getAttribute("data-page") !== "next" || body.hasAttribute("data-pinned")) return;
+  var node = document.getElementById("race-pick");
+  if (!node) return;
+  var list = [];
+  try { list = JSON.parse(node.textContent || "[]"); } catch (e) { return; }
+  var picked = null;
+  list.forEach(function (race) {
+    if (picked) return;
+    if (raceStillOn(race.start, race.eveningMin, !!race.results, clock)) picked = race;
+  });
+  var here = body.getAttribute("data-race-date") || "";
+  if (picked && picked.date !== here && picked.href) location.replace(picked.href);
+  if (!picked && here) location.replace("season-over.html");
+}
 function updateCountdowns(now) {
   var clock = now || new Date();
+  applyNextSlots(clock);
   document.querySelectorAll("[data-countdown]").forEach(function (el) {
-    el.textContent = countdownLine(el.getAttribute("data-when"), el.getAttribute("data-evening-min"), clock);
+    el.textContent = countdownLine(
+      el.getAttribute("data-when"),
+      el.getAttribute("data-evening-min"),
+      clock,
+      el.getAttribute("data-kind") || ""
+    );
   });
 }
 setInterval(function () { updateCountdowns(); }, 60000);
@@ -91,7 +148,7 @@ function fitTitles() {
   document.querySelectorAll(".titleline").forEach(function (line) {
     var heading = line.querySelector("h1");
     var year = line.querySelector(".year");
-    if (!heading || heading.classList.contains("trackname") || heading.clientWidth < 1) return;
+    if (!heading || heading.classList.contains("trackname") || heading.classList.contains("wraptitle") || heading.clientWidth < 1) return;
     heading.style.fontSize = "";
     if (year) year.style.fontSize = "";
     var size = parseFloat(getComputedStyle(heading).fontSize);
