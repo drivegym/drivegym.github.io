@@ -245,7 +245,8 @@ ol.steps li { margin: 0.35rem 0; }
 .view[data-view="pace"] .stat .who { min-width: 0; text-overflow: ellipsis; }
 .stat .clean, .stat .cuts { color: #D8D5CE; font-weight: 400; }
 .stat .cuts.over { color: #F5B400; font-weight: 700; }
-.shortnote { margin: 10px 18px 0; font-size: 1rem; color: #B0B3B8; }
+.shortnote { margin: 10px 18px 0; font-size: 1rem; color: #F5B400; }
+.bestnote { margin: 10px 18px 0; font-size: 1rem; color: #B0B3B8; }
 .stat .clean.low { color: #E8A33D; }
 .phasenote { margin: 10px 18px 0; font-size: 1rem; color: #B0B3B8; }
 .explain b.bestword { color: #B48CFF; }
