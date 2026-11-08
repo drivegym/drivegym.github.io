@@ -224,6 +224,8 @@ ol.steps li { margin: 0.35rem 0; }
 .aiword { font-family: "Roboto Mono", monospace; font-weight: 500; font-size: 0.95em; }
 .ricons { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); display: flex; gap: 4px; align-items: center; }
 .ricons svg { width: 20px; height: 20px; flex: none; }
+.rrow:not(.pod) .rpts:not(.haskg) .ricons { bottom: calc(100% - 2px); }
+.rrow:not(.pod) .rpts:not(.haskg) .ricons svg { width: 16px; height: 16px; }
 .bestline { margin-top: 6px; display: flex; justify-content: flex-end; align-items: center; gap: 8px; min-height: 44px; padding-right: 31px; font-size: 1rem; color: #B0B3B8; white-space: nowrap; }
 .bestline svg { width: 18px; height: 18px; flex: none; }
 .viewtabs { margin: 16px 16px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }

@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="dg-build" content="20261108211704">
 <meta name="theme-color" content="#17191C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -14,7 +15,45 @@
 <link rel="icon" href="../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;family=Roboto+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=39">
+<link rel="stylesheet" href="../style.css?b=20261108211704">
+<script>
+// Freshness (D-261): if version.json names a newer build than this page, reload once.
+(function () {
+  var meta = document.querySelector('meta[name="dg-build"]');
+  var mine = meta ? meta.getAttribute("content") : "";
+  if (!mine) return;
+  var busy = false;
+  function tried() {
+    try { return sessionStorage.getItem("dg-build-tried") || ""; } catch (e) { return ""; }
+  }
+  function remember(build) {
+    try { sessionStorage.setItem("dg-build-tried", build); } catch (e) {}
+  }
+  function checkBuild() {
+    if (busy || !window.fetch) return;
+    busy = true;
+    try {
+      fetch("../version.json?t=" + Date.now(), { cache: "no-store" })
+        .then(function (reply) { return reply.ok ? reply.json() : null; })
+        .then(function (data) {
+          busy = false;
+          var latest = data && data.build ? String(data.build) : "";
+          if (!latest || latest === mine || tried() === latest) return;
+          remember(latest);
+          location.reload();
+        })
+        .catch(function () { busy = false; });
+    } catch (e) { busy = false; }
+  }
+  checkBuild();
+  window.addEventListener("pageshow", function (event) {
+    if (event.persisted) checkBuild();
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") checkBuild();
+  });
+})();
+</script>
 <script>
 function capText() {
   var root = document.documentElement;
@@ -126,7 +165,7 @@ function applyNextSlots(now) {
   });
   var here = body.getAttribute("data-race-date") || "";
   if (picked && picked.date !== here && picked.href) location.replace(picked.href);
-  if (!picked && here) location.replace("season-over.html");
+  if (!picked && here) location.replace("season-over.html?b=20261108211704");
 }
 function updateCountdowns(now) {
   var clock = now || new Date();
@@ -484,7 +523,7 @@ if (document.fonts && document.fonts.ready) {
 <div class="pane">
 <section class="racehead nextpage"><div class="titleline"><span class="raceno flag" role="img" aria-label="Race 35, South Africa" style="background-image:url(../flags/za.webp)"><span aria-hidden="true">35</span></span><h1 class="trackname">Kyalami</h1></div><span class="cupline">GT4 · round 4 of 4</span></section><section class="racestart"><div class="starttext"><span class="kicker" data-countdown data-kind="page" data-when="2026-11-16T18:00:00Z" data-evening-min="75">Countdown</span><div class="whenline" data-start="2026-11-16T18:00:00Z" data-dateline>Mon 16 Nov · 19:00</div></div></section><h2 class="nexthead">The race</h2><section class="sheet"><div class="kv"><span class="k">Session</span><span class="v">1 h 15</span></div><div class="kv"><span class="k">Qualifying</span><span class="v">25 min</span></div><div class="kv"><span class="k">Race</span><span class="v">17 laps</span></div><div class="kv"><span class="k">Start</span><span class="v">Standing</span></div><div class="kv"><span class="k">Pit stops</span><span class="v">None</span></div><div class="kv"><span class="k">In the game</span><span class="v">13:00</span></div><div class="kv"><span class="k">Damage</span><span class="v">Off</span></div><div class="kv"><span class="k">Track limits</span><span class="v">5 warnings</span></div></section><h2 class="nexthead">What's at stake</h2><p class="prose">1 race left, 21 points to win. Still in it: Len, Johan, Jaco. The grey number is the gap to the driver ahead.</p><section class="sheet"><div class="stake"><span class="pos">1</span><span class="who">Len</span><span class="ahead"></span><span class="pts">59</span></div><div class="stake"><span class="pos">2</span><span class="who">Johan</span><span class="ahead">−4</span><span class="pts">55</span></div><div class="stake"><span class="pos">3</span><span class="who">Jaco</span><span class="ahead">−17</span><span class="pts">38</span></div><div class="stake"><span class="pos">4</span><span class="who">Louis</span><span class="ahead">−4</span><span class="pts">34</span></div><div class="stake"><span class="pos">5</span><span class="who">Willie</span><span class="ahead">−1</span><span class="pts">33</span></div></section><h2 class="nexthead whohead"><span>Who drives what</span><img class="classlogo" src="../classes/GT4.webp" alt="GT4"></h2><p class="prose">Each driver has one GT4 for the season.</p><section class="sheet"><div class="carline"><span>Len</span><span>Porsche</span></div><div class="carline"><span>Johan</span><span>McLaren</span></div><div class="carline"><span>Jaco</span><span>Mercedes-AMG</span></div><div class="carline"><span>Louis</span><span>BMW</span></div><div class="carline"><span>Jeremy</span><span>Chevrolet</span></div><div class="carline"><span>Willie</span><span>Alpine</span></div><div class="carline"><span>Adriaan</span><span>Aston Martin</span></div><div class="carline"><span>Jordi</span><span>Audi</span></div><div class="carline"><span>Robbie</span><span>Ginetta</span></div></section><h2 class="nexthead">GT4: momentum over power</h2><p class="prose">Heavier than a GT3, with less downforce: grip comes from the tyres, not the wings. Brake straight, be smooth on the throttle and carry your speed. Mistakes cost time at once.</p><h2 class="nexthead">Kyalami: the cup final</h2><ol class="steps"><li>Elevation changes and long loaded corners: keep the car settled.</li><li>Heavy braking zones: brake in a straight line.</li><li>The GT4 cup is decided here.</li></ol>
 </div>
-<nav class="tabs"><a class="" data-tab="race" href="index.html">Results</a><a class="" data-tab="standings" href="standings.html">Standings</a><a class="" data-tab="calendar" href="calendar.html">Calendar</a></nav>
+<nav class="tabs"><a class="" data-tab="race" href="index.html?b=20261108211704">Results</a><a class="" data-tab="standings" href="standings.html?b=20261108211704">Standings</a><a class="" data-tab="calendar" href="calendar.html?b=20261108211704">Calendar</a></nav>
 </div>
 
 
@@ -506,6 +545,13 @@ if (document.fonts && document.fonts.ready) {
       else if (hash === "#best") path = stem + "/best-drive";
       else if (hash.indexOf("#series-") === 0)
         path = stem + "/series/" + cupSlug(decodeURIComponent(hash.slice(8)));
+    }
+    if (!path) {
+      // Count the page by its normal address: the build parameter (?b=) is not part of it.
+      var params = new URLSearchParams(location.search);
+      params.delete("b");
+      var rest = params.toString();
+      path = (location.pathname || "/") + (rest ? "?" + rest : "");
     }
     if (path) {
       window.goatcounter = window.goatcounter || {};

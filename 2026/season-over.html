@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="dg-build" content="20261108211704">
 <meta name="theme-color" content="#17191C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -14,7 +15,45 @@
 <link rel="icon" href="../icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;family=Roboto+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=39">
+<link rel="stylesheet" href="../style.css?b=20261108211704">
+<script>
+// Freshness (D-261): if version.json names a newer build than this page, reload once.
+(function () {
+  var meta = document.querySelector('meta[name="dg-build"]');
+  var mine = meta ? meta.getAttribute("content") : "";
+  if (!mine) return;
+  var busy = false;
+  function tried() {
+    try { return sessionStorage.getItem("dg-build-tried") || ""; } catch (e) { return ""; }
+  }
+  function remember(build) {
+    try { sessionStorage.setItem("dg-build-tried", build); } catch (e) {}
+  }
+  function checkBuild() {
+    if (busy || !window.fetch) return;
+    busy = true;
+    try {
+      fetch("../version.json?t=" + Date.now(), { cache: "no-store" })
+        .then(function (reply) { return reply.ok ? reply.json() : null; })
+        .then(function (data) {
+          busy = false;
+          var latest = data && data.build ? String(data.build) : "";
+          if (!latest || latest === mine || tried() === latest) return;
+          remember(latest);
+          location.reload();
+        })
+        .catch(function () { busy = false; });
+    } catch (e) { busy = false; }
+  }
+  checkBuild();
+  window.addEventListener("pageshow", function (event) {
+    if (event.persisted) checkBuild();
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") checkBuild();
+  });
+})();
+</script>
 <script>
 function capText() {
   var root = document.documentElement;
@@ -126,7 +165,7 @@ function applyNextSlots(now) {
   });
   var here = body.getAttribute("data-race-date") || "";
   if (picked && picked.date !== here && picked.href) location.replace(picked.href);
-  if (!picked && here) location.replace("season-over.html");
+  if (!picked && here) location.replace("season-over.html?b=20261108211704");
 }
 function updateCountdowns(now) {
   var clock = now || new Date();
@@ -484,7 +523,7 @@ if (document.fonts && document.fonts.ready) {
 <div class="pane">
 <section class="racehead"><div class="titleline"><img src="../icon.png" alt=""><h1>Season complete</h1></div><p class="prose">The 2026 season is over.</p></section>
 </div>
-<nav class="tabs"><a class="" data-tab="race" href="index.html">Results</a><a class="" data-tab="standings" href="standings.html">Standings</a><a class="" data-tab="calendar" href="calendar.html">Calendar</a></nav>
+<nav class="tabs"><a class="" data-tab="race" href="index.html?b=20261108211704">Results</a><a class="" data-tab="standings" href="standings.html?b=20261108211704">Standings</a><a class="" data-tab="calendar" href="calendar.html?b=20261108211704">Calendar</a></nav>
 </div>
 
 
@@ -506,6 +545,13 @@ if (document.fonts && document.fonts.ready) {
       else if (hash === "#best") path = stem + "/best-drive";
       else if (hash.indexOf("#series-") === 0)
         path = stem + "/series/" + cupSlug(decodeURIComponent(hash.slice(8)));
+    }
+    if (!path) {
+      // Count the page by its normal address: the build parameter (?b=) is not part of it.
+      var params = new URLSearchParams(location.search);
+      params.delete("b");
+      var rest = params.toString();
+      path = (location.pathname || "/") + (rest ? "?" + rest : "");
     }
     if (path) {
       window.goatcounter = window.goatcounter || {};
